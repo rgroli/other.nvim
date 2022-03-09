@@ -39,3 +39,7 @@ luac.out
 *.x86_64
 *.hex
 
+# Obsession
+Session.vim
+
+plugin/reload.vim
