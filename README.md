@@ -17,7 +17,8 @@ After setting up the plugin with some builtin or custom mapping, the plugin prov
 | `:OtherSplit`  | Like `:Other`but opens the file in a vertical split. |
 | `:OtherVSplit`  | Like `:Other`but opens the file in a horizontal split. |
 
-For each command you can pass an optional `context` which are described under mappings. For example `:Other test` could be used to open the testcase for the current buffer.
+For each command you can pass an optional `context` which are described under mappings. 
+For example `:Other test` could be used to open the testcase for the current buffer.
 
 
 ## Installation / Setup ##
@@ -31,7 +32,7 @@ require("other").setup({
         -- builtin mappings
         "livewire", "angular", "laravel",
         
-        -- custom mapping
+        -- custom mapping 
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
         	target = "/path/to/file/src/view/%1/",
@@ -49,7 +50,9 @@ require("other").setup({
 ```
 
 ## Configuration
-To adjust the behaviour of the plugin, you the pass a configuration to the setup function. The default-configuration looks like:
+To adjust the behaviour of the plugin, you the pass a configuration to the setup function.
+The default-configuration looks like:
+
 ```lua
 -- default settings
 local defaults = {
@@ -67,7 +70,7 @@ local defaults = {
 }
 ```
 
-| Configuration   | Description |
+| Value   | Description |
 |--------------|-----------|
 | `mappings` | Descriptions how to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
@@ -81,7 +84,6 @@ For example in an angular project, the mapping of a html-template to a typescrip
 ```lua
 require("other").setup({
     mappings = {
-        [...]
     	{
     		pattern = "/src/app/(.*)/.*.ts$",
     		target = "/src/app/%1/%1.component.html",
@@ -90,7 +92,6 @@ require("other").setup({
     		pattern = "/src/app/(.*)/.*.html$",
     		target = "/src/app/%1/%1.component.ts",
     	}
-    	[...]
 	}
 })
 ```
@@ -99,7 +100,6 @@ The mapping between a controller and a view file in a laravel project can be don
 ```lua
 require("other").setup({
     mappings = {
-        [...]
         	{
         		pattern = "/app/Http/Controllers/(.*)Controller.php$",
         		target = "/resources/views/%1/",
@@ -110,7 +110,6 @@ require("other").setup({
         		target = "/app/Http/Controllers/%1Controller.php",
         		transformer = "kebapToCamel",
         	},
-    	[...]
 	}
 })
 ```
@@ -130,11 +129,11 @@ To the builtin mappings they can be passed as string to the mappings in the setu
 
 ```lua
 require("other").setup({
-    [...]
+    -- [...]
     mappings = {
         "livewire", "laravel", "angular"
     }
-    [...]
+    -- [...]
 })
 ```
 Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
@@ -155,7 +154,7 @@ Custom transformers are defined in the setup and can directly used in the mappin
 
 ```lua
 require("other").setup({
-    [...]
+    -- [...]
     mappings = {
         -- custom mapping
         {
@@ -169,7 +168,7 @@ require("other").setup({
             return inputString:lower()
         end
     },
-    [...]
+    -- [...]
 })
 ```
 
