@@ -1,7 +1,11 @@
 local M = {}
 
+local caller
+
+local lastfile = nil
 local api = vim.api
 local buf, win
+local fullpath, head
 
 -- Filling the buffer with the files for the given path
 local function update_view(path)
@@ -10,7 +14,7 @@ local function update_view(path)
 	local paths = vim.split(vim.fn.glob(path .. "*"), "\n")
 	local result = {}
 	for k, file in pairs(paths) do
-		result[k] = file
+		result[k] = file:match("^.+/(.+)$")
 	end
 
 	api.nvim_buf_set_lines(buf, 0, -1, false, result)
@@ -20,27 +24,34 @@ end
 -- Closing the window
 function M.close_window()
 	api.nvim_win_close(win, true)
+	caller.setOtherFileToBuffer(lastfile)
 end
 
 -- Opening the file
 function M.open_file()
 	local str = api.nvim_get_current_line()
+	str = head .. str
+	lastfile = str
 	M.close_window()
-	api.nvim_command("edit " .. str)
+	api.nvim_command(":e " .. str)
 end
 
 -- Opening the file in a regular split
 function M.open_file_sp()
 	local str = api.nvim_get_current_line()
+	str = head .. str
+	lastfile = str
 	M.close_window()
-	api.nvim_command("sp " .. str)
+	api.nvim_command(":sp " .. str)
 end
 
 -- Opening the file in a vertical split
 function M.open_file_vs()
 	local str = api.nvim_get_current_line()
+	str = head .. str
+	lastfile = str
 	M.close_window()
-	api.nvim_command("vs " .. str)
+	api.nvim_command(":vs " .. str)
 end
 
 -- Set the keybindings
@@ -55,7 +66,7 @@ local function set_mappings()
 	}
 
 	for k, v in pairs(mappings) do
-		api.nvim_buf_set_keymap(buf, "n", k, ':lua require"other.window".' .. v .. "<cr>", {
+		api.nvim_buf_set_keymap(buf, "n", k, ':lua require"other-nvim.helper.window".' .. v .. "<cr>", {
 			nowait = true,
 			noremap = true,
 			silent = true,
@@ -90,7 +101,12 @@ local function set_mappings()
 end
 
 -- Main function to open the window
-function M.open_window(path)
+function M.open_window(path, callerInstance)
+	caller = callerInstance
+	lastfile = nil
+	fullpath = path
+	head = fullpath:match("^(.+)/.*$") .. "/"
+
 	buf = api.nvim_create_buf(false, true)
 	local border_buf = api.nvim_create_buf(false, true)
 
@@ -100,8 +116,8 @@ function M.open_window(path)
 	local width = api.nvim_get_option("columns")
 	local height = api.nvim_get_option("lines")
 
-	local win_height = math.ceil(height * 0.3 - 4)
-	local win_width = math.ceil(width * 0.4)
+	local win_height = math.ceil(height * 0.2 - 4)
+	local win_width = math.ceil(width * 0.15)
 	local row = math.ceil((height - win_height) / 2 - 1)
 	local col = math.ceil((width - win_width) / 2)
 
