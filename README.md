@@ -37,8 +37,8 @@ require("other-nvim").setup({
         -- custom mapping 
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
-        	target = "/path/to/file/src/view/%1/",
-        	transformer = "lowercase"
+            target = "/path/to/file/src/view/%1/",
+            transformer = "lowercase"
         }
     },
     transformers = {
@@ -155,7 +155,7 @@ A mapping can have the following settings:
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
 
 #### Builtin Mappings ####
-Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list. 
+Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list. 
 To use the builtin mappings they can be passed as string to the mappings in the setup. 
 
 ```lua
