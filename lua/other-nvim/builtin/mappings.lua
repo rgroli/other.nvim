@@ -28,32 +28,34 @@ M.livewire = {
 
 M.angular = {
 	{
-		pattern = "/src/app/components/(.*)/.*.spec.ts$",
-		target = "/src/app/components/%1/%1.component.ts",
+		pattern = "/(.*)/(.*)/.*.spec.ts$",
+		target = "/%1/%2/%2.component.ts",
 		context = "test",
 	},
 	{
-		pattern = "/src/app/components/(.*)/.*.ts$",
-		target = "/src/app/components/%1/%1.component.html",
-	},
-	{
-		pattern = "/src/app/components/(.*)/.*.html$",
-		target = "/src/app/components/%1/%1.component.ts",
-	},
-	{
-		pattern = "/src/app/components/(.*)/.*.ts$",
-		target = "/src/app/components/%1/%1.component.spec.ts",
+		pattern = "/(.*)/(.*)/.*.ts$",
+		target = "/%1/%2/%2.component.spec.ts",
 		context = "test",
 	},
 	{
-		pattern = "/src/app/components/(.*)/.*.scss$",
-		target = "/src/app/components/%1/%1.component.ts",
-		context = "scss",
+		pattern = "/(.*)/(.*)/.*.spec.ts$",
+		target = "/%1/%2/%2.component.ts",
 	},
 	{
-		pattern = "/src/app/components/(.*)/.*.ts$",
-		target = "/src/app/components/%1/%1.component.scss",
-		context = "scss",
+		pattern = "/(.*)/(.*)/.*.ts$",
+		target = "/%1/%2/%2.component.html",
+	},
+	{
+		pattern = "/(.*)/(.*)/.*.html$",
+		target = "/%1/%2/%2.component.ts",
+	},
+	{
+		pattern = "/(.*)/(.*)/.*.scss$",
+		target = "/%1/%2/%2.component.ts",
+	},
+	{
+		pattern = "/(.*)/(.*)/.*.ts$",
+		target = "/%1/%2/%2.component.scss",
 	},
 }
 

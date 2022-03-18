@@ -31,12 +31,9 @@ local findOther = function(filename, context)
 	-- iterate over all the mapping to check if the filename matches against any "pattern")
 	for _, mapping in pairs(options.mappings) do
 		local match
-		if context == nil then
+
+		if mapping.context == context then
 			match = filename:match(mapping.pattern)
-		else
-			if mapping.context == context then
-				match = filename:match(mapping.pattern)
-			end
 		end
 
 		if match ~= nil then
