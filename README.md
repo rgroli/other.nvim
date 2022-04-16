@@ -112,7 +112,7 @@ local defaults = {
 |--------------|-----------|
 | `mappings` | Descriptions on how to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
-| `rememberBuffers`  | When this option is set to false reference between the two buffers are never saved.|
+| `rememberBuffers`  | When this option is set to false the reference between two buffers is never saved.|
 
 
 ### Mappings ###
