@@ -1,19 +1,18 @@
 local M = {}
 
-local caller
+local _caller, _callerBuffer
 
 local lastfile = nil
 local api = vim.api
 local buf, win
-local fullpath, head
+local head
 
 -- Filling the buffer with the files for the given path
-local function update_view(path)
+local function update_view(files)
 	api.nvim_buf_set_option(buf, "modifiable", true)
 
-	local paths = vim.split(vim.fn.glob(path .. "*"), "\n")
 	local result = {}
-	for k, file in pairs(paths) do
+	for k, file in pairs(files) do
 		result[k] = file:match("^.+/(.+)$")
 	end
 
@@ -21,37 +20,15 @@ local function update_view(path)
 	api.nvim_buf_set_option(buf, "modifiable", false)
 end
 
--- Closing the window
-function M.close_window()
-	api.nvim_win_close(win, true)
-	caller.setOtherFileToBuffer(lastfile)
-end
 
--- Opening the file
-function M.open_file()
+-- Actually opening the file
+local function _openFile(command)
 	local str = api.nvim_get_current_line()
 	str = head .. str
 	lastfile = str
 	M.close_window()
-	api.nvim_command(":e " .. str)
-end
-
--- Opening the file in a regular split
-function M.open_file_sp()
-	local str = api.nvim_get_current_line()
-	str = head .. str
-	lastfile = str
-	M.close_window()
-	api.nvim_command(":sp " .. str)
-end
-
--- Opening the file in a vertical split
-function M.open_file_vs()
-	local str = api.nvim_get_current_line()
-	str = head .. str
-	lastfile = str
-	M.close_window()
-	api.nvim_command(":vs " .. str)
+	api.nvim_set_current_buf(_callerBuffer)
+	api.nvim_command(command .. " " .. str)
 end
 
 -- Set the keybindings
@@ -100,12 +77,36 @@ local function set_mappings()
 	end
 end
 
+-- Closing the window
+function M.close_window()
+	api.nvim_win_close(win, true)
+	_caller.setOtherFileToBuffer(lastfile, _callerBuffer)
+end
+
+-- Opening the file
+function M.open_file()
+	_openFile(":e")
+end
+
+-- Opening the file in a regular split
+function M.open_file_sp()
+	_openFile(":sp")
+end
+
+-- Opening the file in a vertical split
+function M.open_file_vs()
+	_openFile(":vs")
+end
+
+
 -- Main function to open the window
-function M.open_window(path, callerInstance)
-	caller = callerInstance
+function M.open_window(files, callerInstance, callerBuffer)
+	_caller = callerInstance
+	_callerBuffer = callerBuffer
+	print(_callerBuffer);
+
 	lastfile = nil
-	fullpath = path
-	head = fullpath:match("^(.+)/.*$") .. "/"
+	head = files[1]:match("^(.*)/.*$") .. "/"
 
 	buf = api.nvim_create_buf(false, true)
 	local border_buf = api.nvim_create_buf(false, true)
@@ -159,7 +160,7 @@ function M.open_window(path, callerInstance)
 
 	api.nvim_win_set_option(win, "cursorline", true) -- it highlight line with the cursor on it
 	set_mappings()
-	update_view(path)
+	update_view(files)
 end
 
 return M

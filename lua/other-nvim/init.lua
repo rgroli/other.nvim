@@ -24,9 +24,16 @@ local defaults = {
 		camelToKebap = transformers.camelToKebap,
 		kebapToCamel = transformers.kebapToCamel,
 	},
+
+	-- When a mapping requires an initial selection of the other file, this setting controls,
+	-- wether the selection should be remembered for the current user session.
+	-- When this option is set to false reference between the two buffers are never saved.
+	-- Existing references can be removed on the buffer with :OtherClear
+	rememberBuffers = true,
 }
 
--- Find the other file
+-- Find the potential other file(s)
+-- Returns a table of matches.
 local findOther = function(filename, context)
 	-- iterate over all the mapping to check if the filename matches against any "pattern")
 	for _, mapping in pairs(options.mappings) do
@@ -45,10 +52,17 @@ local findOther = function(filename, context)
 
 			-- return (transformed) match with "target"
 			local result, _ = filename:gsub(mapping.pattern, mapping.target)
-			return result
+
+			-- get a list of candidates based on the transformed match.
+			-- additional glob-patterns in the target are respected
+			-- return vim.fn.glob(result, true, true)
+			if vim.fn.isdirectory(result) then
+				result = result .. "*"
+			end
+			return vim.fn.glob(result, true, true)
 		end
 	end
-	return nil
+	return {}
 end
 
 -- Resolve string based builtinMappings
@@ -70,9 +84,11 @@ local resolveBuiltinMappings = function(mappings)
 	return result
 end
 
-M.setOtherFileToBuffer = function(otherFile)
-	if otherFile then
-		vim.b.onv_otherFile = otherFile
+M.setOtherFileToBuffer = function(otherFile, bufferHandle)
+	if options.rememberBuffers == true then
+		if otherFile then
+			vim.api.nvim_buf_set_var(bufferHandle, "onv_otherFile", otherFile)
+		end
 	end
 end
 
@@ -82,36 +98,29 @@ end
 
 -- Actual opening
 local open = function(context, openCommand)
-	local match = findOther(vim.api.nvim_buf_get_name(0), context or nil)
-	if match ~= nil then
-		-- if match is a directory
-		if vim.fn.isdirectory(match) == 1 then
-			-- open it when there's only one file inside
-			if util.getFilesCount(match) == 1 then
-				local filename = util.getFirstFileInDirectory(match)
-				vim.api.nvim_command(":" .. openCommand .. " " .. filename)
-				return openCommand, filename
+	local fileFromBuffer = getOtherFileFromBuffer()
+	-- when we had a match before, open that
+	if fileFromBuffer then
+		vim.api.nvim_command(":" .. openCommand .. " " .. fileFromBuffer)
+		return openCommand, fileFromBuffer
+	else
+		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
+		local matchesCount = table.maxn(matches)
+		if matchesCount > 0 then
+			-- when dealing with a single file -> just open it
+			if matchesCount == 1 then
+				M.setOtherFileToBuffer(matches[1], vim.api.nvim_get_current_buf())
+				vim.api.nvim_command(":" .. openCommand .. " " .. matches[1])
+				return openCommand, matches[1]
 			else
-				-- when we had a match before, open that
-				if getOtherFileFromBuffer() then
-					local fileFromBuffer = getOtherFileFromBuffer()
-					vim.api.nvim_command(":" .. openCommand .. " " .. fileFromBuffer)
-					return openCommand, fileFromBuffer
-				else
-					-- otherwise open a window to pick a file
-					window.open_window(match, M)
-					M.setOtherFileToBuffer(window.lastfile)
-					return "internal", match
-				end
+				-- otherwise open a window to pick a file
+				window.open_window(matches, M, vim.api.nvim_get_current_buf())
+				return "internal", match
 			end
 		else
-			M.setOtherFileToBuffer(match)
-			vim.api.nvim_command(":" .. openCommand .. " " .. match)
-			return openCommand, match
+			print("No 'other' file found.")
+			return false, false
 		end
-	else
-		print("No 'other' file found.")
-		return false, false
 	end
 end
 

@@ -75,7 +75,7 @@ After the installation the plugin offers the following commands:
 
 | Value   | Description |
 |--------------|-----------|
-| :Other | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way the you only have to pick the other/alternative file once. |
+| :Other | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way the you only have to pick the other/alternative file once. This behaviour can be turned off by setting the configuration-option `rememberBuffers` to `false`.|
 | :OtherSplit | Same as `:Other` but the file is opened in a horizontal split.|
 | :OtherVSplit | Same as `:OtherSplit` but the split is vertical.|
 | :OtherClear | Clears the internal reference to the other/alternative file. After doing that a file picker will be opened again if there are multiple matches for the current file. |
@@ -99,6 +99,12 @@ local defaults = {
 		camelToKebap = transformers.camelToKebap,
 		kebapToCamel = transformers.kebapToCamel,
 	},
+
+	-- When a mapping requires an initial selection of the other file, this setting controls,
+	-- wether the selection should be remembered for the current user session.
+	-- When this option is set to false reference between the two buffers are never saved.
+	-- Existing references can be removed on the buffer with :OtherClear
+	rememberBuffers = true,
 }
 ```
 
@@ -106,6 +112,7 @@ local defaults = {
 |--------------|-----------|
 | `mappings` | Descriptions on how to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
+| `rememberBuffers`  | When this option is set to false reference between the two buffers are never saved.|
 
 
 ### Mappings ###
@@ -144,6 +151,20 @@ require("other-nvim").setup({
 	}
 })
 ```
+
+Mappins also allow for using glob-like patterns in the pattern-section:
+```lua 
+require("other-nvim").setup({
+    mappings = {
+    	{
+            pattern = "/src/(.*)/.*.js$",
+            target = "/src/%1/\\(*.css\\|*.scss\\)",
+    	},
+        --- [...]
+	}
+})
+```
+**Special characters need to be escaped with double slashes.**
 
 A mapping can have the following settings: 
 
