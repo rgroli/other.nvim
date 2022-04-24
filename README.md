@@ -2,8 +2,11 @@
 Open alternative files for the current buffer. 
 
 ![screen-gif](./other-nvim.gif)
+The plugin in action in an angular project.
+
 
 ![screen-gif](./other-nvim2.gif)
+The plugin opens a file picker, when there is no perfect match. By default the plugin memorizes the selection.
 
 ## tldr; ##
 With this plugin you can open other/related files for the currently active buffer.  
