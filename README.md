@@ -1,18 +1,17 @@
 # other.nvim
 Open alternative files for the current buffer. 
 
-![screen-gif](./other-nvim.gif)
-
-The plugin in action in an angular project.
-
-
-![screen-gif](./other-nvim2.gif)
-
-The plugin opens a file picker, when there is no perfect match. By default the plugin memorizes the selection.
-
 ## tldr; ##
 With this plugin you can open other/related files for the currently active buffer.  
 For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
+
+#### The plugin in action in an angular project.
+![screen-gif](./other-nvim.gif)
+
+#### The plugin in action in a php project.
+![screen-gif](./other-nvim2.gif)
+
+The plugin opens a file picker, when there is no perfect match. By default the plugin memorizes the selection.
 
 ## Dependencies ##
 Neovim > 0.5
