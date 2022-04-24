@@ -3,7 +3,7 @@ Open alternative files for the current buffer.
 
 ## tldr; ##
 With this plugin you can open other/related files for the currently active buffer.  
-For instance when editing a controller you can easily open a view, a model or a testcase without the need open a fuzzy finder or a tree.
+For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
 
 ## Dependencies ##
 Neovim > 0.5
@@ -26,7 +26,7 @@ For example `:Other test` could be used to open the testcase for the current buf
 Plug 'rgroli/other.nvim'
 ```
 
-After the installation the plugin needs to be setup. When you're using a `init.lua` an example setup could look like:  
+After the installation the plugin needs to be initialized. When you're using a `init.lua` an example setup could look like:  
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -50,7 +50,7 @@ require("other-nvim").setup({
 })
 ```
 
-A basic configuration with basic keybinding would look like:
+A simple configuration with basic keybinding would look like:
 
 ```lua
 require("other-nvim").setup({
@@ -75,12 +75,12 @@ After the installation the plugin offers the following commands:
 
 | Value   | Description |
 |--------------|-----------|
-| :Other | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way the you only have to pick the other/alternative file once. This behaviour can be turned off by setting the configuration-option `rememberBuffers` to `false`.|
+| :Other | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way you only have to pick the other/alternative file once. This behaviour can be turned off by setting the configuration-option `rememberBuffers` to `false`.|
 | :OtherSplit | Same as `:Other` but the file is opened in a horizontal split.|
 | :OtherVSplit | Same as `:OtherSplit` but the split is vertical.|
 | :OtherClear | Clears the internal reference to the other/alternative file. After doing that a file picker will be opened again if there are multiple matches for the current file. |
 
-The commands `:Other`, `:OtherSplit` and `:OtherVSplit` accept the optional parameter `context`. When the context is provided, only the mappings with the given context are used for looking up the corresponding file. This can be useful to open specific files, like stylesheets, models, tests, etc. and bind that to a specific key.
+The commands `:Other`, `:OtherSplit` and `:OtherVSplit` accept the optional parameter `context`. When the context is provided only the mappings with the given context are used for looking up the corresponding file. This can be useful to open specific files like stylesheets, models, tests, etc. and bind that to a specific key.
 
 
 ## Configuration
@@ -100,9 +100,9 @@ local defaults = {
 		kebapToCamel = transformers.kebapToCamel,
 	},
 
-	-- When a mapping requires an initial selection of the other file, this setting controls,
+	-- When a mapping requires an initial selection of the other file, this setting controls
 	-- wether the selection should be remembered for the current user session.
-	-- When this option is set to false reference between the two buffers are never saved.
+	-- When this option is set to false the reference between the two buffers is never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
 }
@@ -110,7 +110,7 @@ local defaults = {
 
 | Value   | Description |
 |--------------|-----------|
-| `mappings` | Descriptions on how to find other/alternative files for the current buffer. |
+| `mappings` | Settings for finding other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
 | `rememberBuffers`  | When this option is set to false the reference between two buffers is never saved.|
 
@@ -122,14 +122,14 @@ For example in an angular project, the mapping of a HTML-template to a typescrip
 ```lua
 require("other-nvim").setup({
     mappings = {
-    	{
-    		pattern = "/src/app/(.*)/.*.ts$",
-    		target = "/src/app/%1/%1.component.html",
-    	},
-    	{
-    		pattern = "/src/app/(.*)/.*.html$",
-    		target = "/src/app/%1/%1.component.ts",
-    	}
+		{
+			pattern = "/src/app/(.*)/.*.ts$",
+			target = "/src/app/%1/%1.component.html",
+		},
+		{
+			pattern = "/src/app/(.*)/.*.html$",
+			target = "/src/app/%1/%1.component.ts",
+		}
 	}
 })
 ```
@@ -156,11 +156,12 @@ Mappins also allow for using glob-like patterns in the pattern-section:
 ```lua 
 require("other-nvim").setup({
     mappings = {
-    	{
-            pattern = "/src/(.*)/.*.js$",
-            target = "/src/%1/\\(*.css\\|*.scss\\)",
-    	},
-        --- [...]
+		--- [...]
+		{
+		    pattern = "/src/(.*)/.*.js$",
+		    target = "/src/%1/\\(*.css\\|*.scss\\)",
+		},
+		--- [...]
 	}
 })
 ```
@@ -170,9 +171,9 @@ A mapping can have the following settings:
 
 | Setting   | Description |
 |--------------|-----------|
-| `pattern` | A regular expression for finding an available mapping for the current buffer. The pattern should have one capturing group `(.*)` which can be used in the target setting.      |
-| `target`  | A string for resolving the other/alternative file. The `%1` of the string is represented by whatever was found in the capturing group of the pattern. |
-| `transformer` | A function to transform the captured group of the pattern before it is used in the target.|
+| `pattern` | A regular expression for finding an available mapping for the current buffer. The pattern can have one ore more capturing group `(.*)` which can be used in the target setting.      |
+| `target`  | A string for resolving the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. %2 would reference a second capturing group |
+| `transformer` (optional) | A function to transform the captured group of the pattern before it is used in the target.|
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
 
 #### Builtin Mappings ####
@@ -193,7 +194,7 @@ require("other-nvim").setup({
 Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
 
 ### Transformers ###
-Transformers are functions to transform the captured group of the pattern before being used in the target. 
+Transformers are lua functions to transform the captured group of the pattern before being used in the target. 
 Right now the plugin has two builtin transformers `camelToKebap` and `kebapToCamel`. 
 
 It is easy to create a custom transformers in the setup as well. A transformer must have this signature: 
@@ -226,4 +227,3 @@ require("other-nvim").setup({
 })
 ```
 
-It would be great if the list of commonly used transformers could be extended by contributions.
