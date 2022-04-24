@@ -3,6 +3,8 @@ Open alternative files for the current buffer.
 
 ![screen-gif](./other-nvim.gif)
 
+![screen-gif](./other-nvim2.gif)
+
 ## tldr; ##
 With this plugin you can open other/related files for the currently active buffer.  
 For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
