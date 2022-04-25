@@ -1,32 +1,31 @@
 # other.nvim
-Open alternative files for the current buffer. 
+Open alternative files for the current buffer.
 
+## tldr; ##
+With this plugin you can open other/related files for the currently active buffer.
+For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
+
+#### The plugin in action in an angular project.
 ![screen-gif](./other-nvim.gif)
 
-The plugin in action in an angular project.
-
-
+#### The plugin in action in a php project.
 ![screen-gif](./other-nvim2.gif)
 
 The plugin opens a file picker, when there is no perfect match. By default the plugin memorizes the selection.
-
-## tldr; ##
-With this plugin you can open other/related files for the currently active buffer.  
-For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
 
 ## Dependencies ##
 Neovim > 0.5
 
 ## Usage ##
-After setting up the plugin with some builtin or custom mapping, the plugin provides this set of command: 
+After setting up the plugin with some builtin or custom mapping, the plugin provides this set of command:
 
 | Command   | Description |
 |--------------|-----------|
 | `:Other` |Opens the other/alternative file according to the configured mapping.   |
-| `:OtherSplit`  | Like `:Other`but opens the file in a vertical split. |
-| `:OtherVSplit`  | Like `:Other`but opens the file in a horizontal split. |
+| `:OtherSplit`  | Like `:Other`but opens the file in an horizontal split. |
+| `:OtherVSplit`  | Like `:Other`but opens the file in a vertical split. |
 
-For each command you can pass an optional `context` which are described under mappings. 
+For each command you can pass an optional `context` which are described under mappings.
 For example `:Other test` could be used to open the testcase for the current buffer.
 
 
@@ -35,15 +34,15 @@ For example `:Other test` could be used to open the testcase for the current buf
 Plug 'rgroli/other.nvim'
 ```
 
-After the installation the plugin needs to be initialized. When you're using a `init.lua` an example setup could look like:  
+After the installation the plugin needs to be initialized. When you're using a `init.lua` an example setup could look like:
 ```lua
 require("other-nvim").setup({
     mappings = {
         -- builtin mappings
-        "livewire", 
-        "angular", 
+        "livewire",
+        "angular",
         "laravel",
-        -- custom mapping 
+        -- custom mapping
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
             target = "/path/to/file/src/view/%1/",
@@ -125,9 +124,9 @@ local defaults = {
 
 
 ### Mappings ###
-Mappings are the heart of the plugin and describe how to find the other/alternative file for the current buffer. 
+Mappings are the heart of the plugin and describe how to find the other/alternative file for the current buffer.
 
-For example in an angular project, the mapping of a HTML-template to a typescript component and vice-versa can be done as follows: 
+For example in an angular project, the mapping of a HTML-template to a typescript component and vice-versa can be done as follows:
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -143,7 +142,7 @@ require("other-nvim").setup({
 })
 ```
 
-The mapping between a controller and a view file in a laravel project can be done with: 
+The mapping between a controller and a view file in a laravel project can be done with:
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -162,7 +161,7 @@ require("other-nvim").setup({
 ```
 
 Mappins also allow for using glob-like patterns in the pattern-section:
-```lua 
+```lua
 require("other-nvim").setup({
     mappings = {
 		--- [...]
@@ -176,7 +175,7 @@ require("other-nvim").setup({
 ```
 **Special characters need to be escaped with double slashes.**
 
-A mapping can have the following settings: 
+A mapping can have the following settings:
 
 | Setting   | Description |
 |--------------|-----------|
@@ -186,15 +185,15 @@ A mapping can have the following settings:
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
 
 #### Builtin Mappings ####
-Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list. 
-To use the builtin mappings they can be passed as string to the mappings in the setup. 
+Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
+To use the builtin mappings they can be passed as string to the mappings in the setup.
 
 ```lua
 require("other-nvim").setup({
     -- [...]
     mappings = {
-        "livewire", 
-        "laravel", 
+        "livewire",
+        "laravel",
         "angular"
     }
     -- [...]
@@ -203,10 +202,10 @@ require("other-nvim").setup({
 Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
 
 ### Transformers ###
-Transformers are lua functions to transform the captured group of the pattern before being used in the target. 
-Right now the plugin has two builtin transformers `camelToKebap` and `kebapToCamel`. 
+Transformers are lua functions to transform the captured group of the pattern before being used in the target.
+Right now the plugin has two builtin transformers `camelToKebap` and `kebapToCamel`.
 
-It is easy to create a custom transformers in the setup as well. A transformer must have this signature: 
+It is easy to create a custom transformers in the setup as well. A transformer must have this signature:
 ```lua
 function (inputString)
    -- transforming here
@@ -235,4 +234,3 @@ require("other-nvim").setup({
     -- [...]
 })
 ```
-
