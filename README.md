@@ -160,7 +160,7 @@ require("other-nvim").setup({
 })
 ```
 
-Mappins also allow for using glob-like patterns in the pattern-section:
+💡 Mappins also allow for using glob-like patterns in the pattern-section:
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -180,9 +180,17 @@ A mapping can have the following settings:
 | Setting   | Description |
 |--------------|-----------|
 | `pattern` | A regular expression for finding an available mapping for the current buffer. The pattern can have one ore more capturing group `(.*)` which can be used in the target setting.      |
-| `target`  | A string for resolving the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. %2 would reference a second capturing group |
+| `target`  | A string for resolving the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. `%2` would reference a second capturing group |
 | `transformer` (optional) | A function to transform the captured group of the pattern before it is used in the target.|
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
+
+💡 **Escaping in 'pattern'** 
+
+When using regexes in the pattern be aware that some characters need to be escaped meaning that they need to be prepended with a `%`. 
+These characters need escaping when they should be used literally: `( ) . % + - * ? [ ^ $`
+
+For instance when something like `some-folder` is part of the pattern it should be written as `some%-folder`.
+
 
 #### Builtin Mappings ####
 Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
@@ -199,7 +207,7 @@ require("other-nvim").setup({
     -- [...]
 })
 ```
-Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
+💡 Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
 
 ### Transformers ###
 Transformers are lua functions to transform the captured group of the pattern before being used in the target.
