@@ -207,7 +207,7 @@ require("other-nvim").setup({
     -- [...]
 })
 ```
-💡 Beware that the order in which the mappings are defined in the setup matters! The first match will be always be used.
+💡 If there are multiple mappings matching the current path, this plugin will show the file picker to select one file.
 
 ### Transformers ###
 Transformers are lua functions to transform the captured group of the pattern before being used in the target.
