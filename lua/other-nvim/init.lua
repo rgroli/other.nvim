@@ -35,6 +35,7 @@ local defaults = {
 -- Find the potential other file(s)
 -- Returns a table of matches.
 local findOther = function(filename, context)
+	local matches = {}
 	-- iterate over all the mapping to check if the filename matches against any "pattern")
 	for _, mapping in pairs(options.mappings) do
 		local match
@@ -59,10 +60,14 @@ local findOther = function(filename, context)
 			if vim.fn.isdirectory(result) then
 				result = result .. "*"
 			end
-			return vim.fn.glob(result, true, true)
+
+			local mappingMatches = vim.fn.glob(result, true, true)
+			for _, value in pairs(mappingMatches) do
+				table.insert(matches, value)
+			end
 		end
 	end
-	return {}
+	return matches
 end
 
 -- Resolve string based builtinMappings
@@ -105,7 +110,7 @@ local open = function(context, openCommand)
 		return openCommand, fileFromBuffer
 	else
 		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
-		local matchesCount = table.maxn(matches)
+		local matchesCount = #matches
 		if matchesCount > 0 then
 			-- when dealing with a single file -> just open it
 			if matchesCount == 1 then
