@@ -5,19 +5,19 @@ Open alternative files for the current buffer.
 With this plugin you can open other/related files for the currently active buffer.
 For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
 
-#### The plugin in action in an angular project.
+#### The plugin in an angular project.
 ![screen-gif](./other-nvim.gif)
 
-#### The plugin in action in a php project.
+#### The plugin in a php project.
 ![screen-gif](./other-nvim2.gif)
 
-The plugin opens a file picker, when there is no perfect match. By default the plugin memorizes the selection.
+The plugin opens a file picker when there's no perfect match. By default it memorizes the selection.
 
 ## Dependencies ##
 Neovim > 0.5
 
 ## Usage ##
-After setting up the plugin with some builtin or custom mapping, the plugin provides this set of command:
+After setting up the plugin with builtin or custom mapping, it provides this set of command:
 
 | Command   | Description |
 |--------------|-----------|
@@ -25,7 +25,7 @@ After setting up the plugin with some builtin or custom mapping, the plugin prov
 | `:OtherSplit`  | Like `:Other`but opens the file in an horizontal split. |
 | `:OtherVSplit`  | Like `:Other`but opens the file in a vertical split. |
 
-For each command you can pass an optional `context` which are described under mappings.
+For each command you can pass an optional `context` which is described under mappings.
 For example `:Other test` could be used to open the testcase for the current buffer.
 
 
@@ -34,7 +34,7 @@ For example `:Other test` could be used to open the testcase for the current buf
 Plug 'rgroli/other.nvim'
 ```
 
-After the installation the plugin needs to be initialized. When you're using a `init.lua` an example setup could look like:
+After the installation the plugin needs to be initialized. When you're using an `init.lua` a setup could look like:
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -79,14 +79,14 @@ vim.api.nvim_set_keymap("n", "<leader>lt", "<cmd>:Other test<CR>", { noremap = t
 vim.api.nvim_set_keymap("n", "<leader>ls", "<cmd>:Other scss<CR>", { noremap = true, silent = true })
 ```
 
-After the installation the plugin offers the following commands:
+After the installation the following commands are offered:
 
 | Value   | Description |
 |--------------|-----------|
 | :Other | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way you only have to pick the other/alternative file once. This behaviour can be turned off by setting the configuration-option `rememberBuffers` to `false`.|
 | :OtherSplit | Same as `:Other` but the file is opened in a horizontal split.|
 | :OtherVSplit | Same as `:OtherSplit` but the split is vertical.|
-| :OtherClear | Clears the internal reference to the other/alternative file. After doing that a file picker will be opened again if there are multiple matches for the current file. |
+| :OtherClear | Clears the internal reference to the other/alternative file. Afterwards a file picker will be opened again if there are multiple matches for the current file. |
 
 The commands `:Other`, `:OtherSplit` and `:OtherVSplit` accept the optional parameter `context`. When the context is provided only the mappings with the given context are used for looking up the corresponding file. This can be useful to open specific files like stylesheets, models, tests, etc. and bind that to a specific key.
 
@@ -118,7 +118,7 @@ local defaults = {
 
 | Value   | Description |
 |--------------|-----------|
-| `mappings` | Settings for finding other/alternative files for the current buffer. |
+| `mappings` | Settings to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
 | `rememberBuffers`  | When this option is set to false the reference between two buffers is never saved.|
 
@@ -179,14 +179,14 @@ A mapping can have the following settings:
 
 | Setting   | Description |
 |--------------|-----------|
-| `pattern` | A regular expression for finding an available mapping for the current buffer. The pattern can have one ore more capturing group `(.*)` which can be used in the target setting.      |
-| `target`  | A string for resolving the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. `%2` would reference a second capturing group |
+| `pattern` | A regular expression to find an available mapping for the current buffer. The pattern can have one ore more capturing group `(.*)` which can be used in the target setting.      |
+| `target`  | A string to resolve the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. `%2` would reference a second capturing group |
 | `transformer` (optional) | A function to transform the captured group of the pattern before it is used in the target.|
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
 
 💡 **Escaping in 'pattern'** 
 
-When using regexes in the pattern be aware that some characters need to be escaped meaning that they need to be prepended with a `%`. 
+When using regexes in the pattern be aware that some characters need to be escaped with an `%`. 
 These characters need escaping when they should be used literally: `( ) . % + - * ? [ ^ $`
 
 For instance when something like `some-folder` is part of the pattern it should be written as `some%-folder`.
@@ -207,7 +207,7 @@ require("other-nvim").setup({
     -- [...]
 })
 ```
-💡 If there are multiple mappings matching the current path, this plugin will show the file picker to select one file.
+💡 If there are multiple mappings matching the current path a file picker will be shown to select the desired file.
 
 ### Transformers ###
 Transformers are lua functions to transform the captured group of the pattern before being used in the target.

@@ -103,7 +103,6 @@ end
 function M.open_window(files, callerInstance, callerBuffer)
 	_caller = callerInstance
 	_callerBuffer = callerBuffer
-	print(_callerBuffer);
 
 	lastfile = nil
 	head = files[1]:match("^(.*)/.*$") .. "/"

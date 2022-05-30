@@ -36,7 +36,7 @@ local defaults = {
 -- Returns a table of matches.
 local findOther = function(filename, context)
 	local matches = {}
-	-- iterate over all the mapping to check if the filename matches against any "pattern")
+	-- iterate over all the mapping to check if the filename matches against any "pattern"
 	for _, mapping in pairs(options.mappings) do
 		local match
 
@@ -82,7 +82,23 @@ local resolveBuiltinMappings = function(mappings)
 					end
 				end
 			else
-				table.insert(result, mapping)
+				-- muliple patterns for a mapping
+				if type(mapping.target) == "table" then
+					for _, t in pairs(mapping.target) do
+						local m = vim.deepcopy(mapping)
+						if type(t) == "string" then
+							m.target = t
+						end
+						if type(t) == "table" then
+							for key, tv in pairs(t) do
+								m[key] = tv
+							end
+						end
+						table.insert(result, m)
+					end
+				else
+					table.insert(result, mapping)
+				end
 			end
 		end
 	end
@@ -107,7 +123,6 @@ local open = function(context, openCommand)
 	-- when we had a match before, open that
 	if fileFromBuffer then
 		vim.api.nvim_command(":" .. openCommand .. " " .. fileFromBuffer)
-		return openCommand, fileFromBuffer
 	else
 		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
 		local matchesCount = #matches
@@ -116,15 +131,12 @@ local open = function(context, openCommand)
 			if matchesCount == 1 then
 				M.setOtherFileToBuffer(matches[1], vim.api.nvim_get_current_buf())
 				vim.api.nvim_command(":" .. openCommand .. " " .. matches[1])
-				return openCommand, matches[1]
 			else
 				-- otherwise open a window to pick a file
 				window.open_window(matches, M, vim.api.nvim_get_current_buf())
-				return "internal", match
 			end
 		else
 			print("No 'other' file found.")
-			return false, false
 		end
 	end
 end
@@ -139,17 +151,22 @@ end
 
 -- Trying to open another file
 M.open = function(context)
-	return open(context, "e")
+	open(context, "e")
 end
 
 -- Trying to open another file in split
 M.openSplit = function(context)
-	return open(context, "sp")
+	open(context, "sp")
 end
 
 -- Trying to open another file in vertical split
 M.openVSplit = function(context)
-	return open(context, "vs")
+	open(context, "vs")
+end
+
+-- return the currently set options
+M.getOptions = function()
+	return options
 end
 
 -- Removing the memorized "other" file from the current buffer
