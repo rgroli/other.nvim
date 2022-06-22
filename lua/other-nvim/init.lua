@@ -37,7 +37,7 @@ local defaults = {
 local findOther = function(filename, context)
 	local matches = {}
 	-- iterate over all the mapping to check if the filename matches against any "pattern")
-	for _, mapping in pairs(options.mappings) do
+	for _, mapping in pairs(options.mappings or {}) do
 		local match
 
 		if mapping.context == context then
