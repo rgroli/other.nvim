@@ -130,12 +130,12 @@ require("other-nvim").setup({
 		{
 			pattern = "/src/app/(.*)/.*.ts$",
 			target = "/src/app/%1/%1.component.html",
-            context = "component" -- optional 
+            		context = "component" -- optional 
 		},
 		{
 			pattern = "/src/app/(.*)/.*.html$",
 			target = "/src/app/%1/%1.component.ts",
-            context = "view"
+            		context = "view"
 		}
 	}
 })
@@ -148,13 +148,13 @@ require("other-nvim").setup({
         	{
         		pattern = "/app/Http/Controllers/(.*)Controller.php$",
         		target = "/resources/views/%1/",
-                context = "controller"
+                	context = "controller"
         		transformer = "camelToKebap",
         	},
         	{
         		pattern = "/resources/views/(.*)/.*",
         		target = "/app/Http/Controllers/%1Controller.php",
-                context = "view"
+                	context = "view"
         		transformer = "kebapToCamel",
         	},
 	}
@@ -168,22 +168,22 @@ require("other-nvim").setup({
 		{
 			pattern = "/src/app/(.*)/.*.ts$",
 			target = "/src/app/%1/%1.component.html",
-            context = "component"
+            		context = "component"
 		},
 		{
 			pattern = "/src/app/(.*)/.*.html$",
 			target = "/src/app/%1/%1.component.ts",
-            context = "view"
+            		context = "view"
 		},
 		{
 			pattern = "/src/app/(.*)/.*.ts$",
 			target = "/src/app/%1/%1.component.html",
-            context = "component"
+            		context = "component"
 		},
 		{
 			pattern = "/src/app/(.*)/.*.spec.ts$",
 			target = "/src/app/%1/%1.component.html",
-            context = "test"
+            		context = "test"
 		},
 	}
 })
