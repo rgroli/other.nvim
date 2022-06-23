@@ -8,9 +8,6 @@ For instance when editing a controller you can easily open a view, a model or a 
 #### The plugin in an angular project.
 ![screen-gif](./other-nvim.gif)
 
-#### The plugin in a php project.
-![screen-gif](./other-nvim2.gif)
-
 The plugin opens a file picker when there's no perfect match. By default it memorizes the selection.
 
 ## Dependencies ##
@@ -133,10 +130,12 @@ require("other-nvim").setup({
 		{
 			pattern = "/src/app/(.*)/.*.ts$",
 			target = "/src/app/%1/%1.component.html",
+            context = "component" -- optional 
 		},
 		{
 			pattern = "/src/app/(.*)/.*.html$",
 			target = "/src/app/%1/%1.component.ts",
+            context = "view"
 		}
 	}
 })
@@ -149,14 +148,65 @@ require("other-nvim").setup({
         	{
         		pattern = "/app/Http/Controllers/(.*)Controller.php$",
         		target = "/resources/views/%1/",
+                context = "controller"
         		transformer = "camelToKebap",
         	},
         	{
         		pattern = "/resources/views/(.*)/.*",
         		target = "/app/Http/Controllers/%1Controller.php",
+                context = "view"
         		transformer = "kebapToCamel",
         	},
 	}
+})
+```
+
+Mapping multiple targets to one filetype (in this case .ts to .html or .spec.ts) can be done like:
+```lua
+require("other-nvim").setup({
+    mappings = {
+		{
+			pattern = "/src/app/(.*)/.*.ts$",
+			target = "/src/app/%1/%1.component.html",
+            context = "component"
+		},
+		{
+			pattern = "/src/app/(.*)/.*.html$",
+			target = "/src/app/%1/%1.component.ts",
+            context = "view"
+		},
+		{
+			pattern = "/src/app/(.*)/.*.ts$",
+			target = "/src/app/%1/%1.component.html",
+            context = "component"
+		},
+		{
+			pattern = "/src/app/(.*)/.*.spec.ts$",
+			target = "/src/app/%1/%1.component.html",
+            context = "test"
+		},
+	}
+})
+```
+
+this can even be described in shorter syntax: 
+```lua
+require("other-nvim").setup({
+    mappings = {
+    	{
+            pattern = "/(.*)/(.*)/.*.ts$",
+            target = {
+                {
+                    target = "/%1/%2/%2.component.html",
+                    context = "html"
+                },
+                {
+                    target = "/%1/%2/%2.component.spec.ts",
+                    context = "test"
+                }
+            }
+        }
+	},
 })
 ```
 
@@ -182,7 +232,7 @@ A mapping can have the following settings:
 | `pattern` | A regular expression to find an available mapping for the current buffer. The pattern can have one ore more capturing group `(.*)` which can be used in the target setting.      |
 | `target`  | A string to resolve the other/alternative file. The `%1` in the string represents a match in the first capturing group of the pattern. `%2` would reference a second capturing group |
 | `transformer` (optional) | A function to transform the captured group of the pattern before it is used in the target.|
-| `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. |
+| `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. The context is also used to display additional information when picking a file in the window.|
 
 💡 **Escaping in 'pattern'** 
 

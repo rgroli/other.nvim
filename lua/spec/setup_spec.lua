@@ -19,7 +19,7 @@ describe("different mappings", function()
 						{
 							target = "%1.html",
 							transformer = "camelToKebap",
-							context = "html"
+							context = "html",
 						},
 					},
 				},
@@ -39,7 +39,46 @@ describe("different mappings", function()
 				pattern = "(.*).ts$",
 				target = "%1.html",
 				transformer = "camelToKebap",
-				context = "html"
+				context = "html",
+			},
+		}
+		assert.are.same(require("other-nvim").getOptions().mappings, expected)
+	end)
+
+	it("Check mapping combinations multiple targets flat", function()
+		require("other-nvim").setup({
+			mappings = {
+				{
+					pattern = "(.*).ts$",
+					target = "%1.spec.ts",
+				},
+				{
+					pattern = "(.*).ts$",
+					target = "%1.scss",
+				},
+				{
+					pattern = "(.*).ts$",
+					target = "%1.html",
+					transformer = "camelToKebap",
+					context = "html",
+				},
+			},
+		})
+
+		local expected = {
+			{
+				pattern = "(.*).ts$",
+				target = "%1.spec.ts",
+			},
+			{
+				pattern = "(.*).ts$",
+				target = "%1.scss",
+			},
+			{
+				pattern = "(.*).ts$",
+				target = "%1.html",
+				transformer = "camelToKebap",
+				context = "html",
 			},
 		}
 		assert.are.same(require("other-nvim").getOptions().mappings, expected)

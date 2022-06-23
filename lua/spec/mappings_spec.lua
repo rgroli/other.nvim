@@ -18,6 +18,53 @@ end
 -- Actual Testcases
 describe("angular-mapping", function()
 	it("Show the correct other file", function()
+		require("other-nvim").setup({
+			mappings = {
+				{
+					pattern = "/(.*)/(.*)/.*.ts$",
+					target = {
+						{
+							target = "/%1/%2/%2.component.html",
+							context = "html",
+						},
+						{
+							target = "/%1/%2/%2.component.scss",
+							context = "scss",
+						},
+						{
+							target = "/%1/%2/%2.component.spec.ts",
+							context = "test",
+						},
+					},
+				},
+				{
+					pattern = "/(.*)/(.*)/.*.html$",
+					target = {
+						{
+							target = "/%1/%2/%2.component.ts",
+							context = "component",
+						},
+					},
+				},
+				{
+					pattern = "/(.*)/(.*)/.*.scss$",
+					target = {
+						{
+							target = "/%1/%2/%2.component.html",
+							context = "html",
+						},
+						{
+							target = "/%1/%2/%2.component.ts",
+							context = "component",
+						},
+						{
+							target = "/%1/%2/%2.component.spec.ts",
+							context = "test",
+						},
+					},
+				},
+			},
+		})
 		closeAllBuffers()
 		local fnInput = rootPath
 			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.html"
@@ -28,11 +75,12 @@ describe("angular-mapping", function()
 		vim.api.nvim_command(":Other")
 
 		assert.equals(fnExpected, vim.api.nvim_buf_get_name(0))
-		
+
 		vim.api.nvim_command(":Other")
 		local lines = getBufferContent(0)
-		assert.equals(lines[1], "my-component.component.html")
-		assert.equals(lines[2], "my-component.component.scss")
+
+		assert.equals(lines[1], "html | my-component.component.html")
+		assert.equals(lines[2], "scss | my-component.component.scss")
 
 		vim.api.nvim_feedkeys("o", "x", true)
 		assert.equals(fnInput, vim.api.nvim_buf_get_name(0))
@@ -47,8 +95,8 @@ describe("angular-mapping", function()
 
 		local lines = getBufferContent(0)
 
-		assert.equals(lines[1], "my-component.component.html")
-		assert.equals(lines[2], "my-component.component.scss")
+		assert.equals(lines[1], "html | my-component.component.html")
+		assert.equals(lines[2], "scss | my-component.component.scss")
 	end)
 
 	it("Show filepicker when there's more than one match and open a file", function()
@@ -62,8 +110,8 @@ describe("angular-mapping", function()
 		vim.api.nvim_command(":Other")
 
 		local lines = getBufferContent(0)
-		assert.equals(lines[1], "my-component.component.html")
-		assert.equals(lines[2], "my-component.component.scss")
+		assert.equals(lines[1], "html | my-component.component.html")
+		assert.equals(lines[2], "scss | my-component.component.scss")
 
 		vim.api.nvim_feedkeys("j", "x", true)
 		vim.api.nvim_feedkeys("o", "x", true)

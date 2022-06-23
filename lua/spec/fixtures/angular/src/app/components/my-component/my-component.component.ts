@@ -1,1 +1,1 @@
-this is the typescript component
+// this is the typescript component

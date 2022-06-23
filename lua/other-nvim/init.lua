@@ -32,15 +32,20 @@ local defaults = {
 	rememberBuffers = true,
 }
 
+local log = function(var)
+	print(vim.inspect(var))
+end
+
 -- Find the potential other file(s)
 -- Returns a table of matches.
 local findOther = function(filename, context)
 	local matches = {}
+
 	-- iterate over all the mapping to check if the filename matches against any "pattern"
 	for _, mapping in pairs(options.mappings) do
 		local match
 
-		if mapping.context == context then
+		if mapping.context == context or context == nil then
 			match = filename:match(mapping.pattern)
 		end
 
@@ -63,11 +68,33 @@ local findOther = function(filename, context)
 
 			local mappingMatches = vim.fn.glob(result, true, true)
 			for _, value in pairs(mappingMatches) do
-				table.insert(matches, value)
+				table.insert(matches, { context = mapping.context, filename = value })
 			end
 		end
 	end
 	return matches
+end
+
+local flattenMapping = function(mapping, result)
+	-- multiple patterns for a mapping
+	if type(mapping.target) == "table" then
+		for _, t in pairs(mapping.target) do
+			local m = vim.deepcopy(mapping)
+
+			if type(t) == "string" then
+				m.target = t
+			end
+			if type(t) == "table" then
+				for key, tv in pairs(t) do
+					m[key] = tv
+				end
+			end
+			table.insert(result, m)
+		end
+	else
+		table.insert(result, mapping)
+	end
+	return result
 end
 
 -- Resolve string based builtinMappings
@@ -78,27 +105,11 @@ local resolveBuiltinMappings = function(mappings)
 			if type(mapping) == "string" then
 				if builtinMappings[mapping] ~= nil then
 					for _, biM in pairs(builtinMappings[mapping]) do
-						table.insert(result, biM)
+						result = flattenMapping(biM, result)
 					end
 				end
 			else
-				-- muliple patterns for a mapping
-				if type(mapping.target) == "table" then
-					for _, t in pairs(mapping.target) do
-						local m = vim.deepcopy(mapping)
-						if type(t) == "string" then
-							m.target = t
-						end
-						if type(t) == "table" then
-							for key, tv in pairs(t) do
-								m[key] = tv
-							end
-						end
-						table.insert(result, m)
-					end
-				else
-					table.insert(result, mapping)
-				end
+				result = flattenMapping(mapping, result)
 			end
 		end
 	end
@@ -129,8 +140,8 @@ local open = function(context, openCommand)
 		if matchesCount > 0 then
 			-- when dealing with a single file -> just open it
 			if matchesCount == 1 then
-				M.setOtherFileToBuffer(matches[1], vim.api.nvim_get_current_buf())
-				vim.api.nvim_command(":" .. openCommand .. " " .. matches[1])
+				M.setOtherFileToBuffer(matches[1].filename, vim.api.nvim_get_current_buf())
+				vim.api.nvim_command(":" .. openCommand .. " " .. matches[1].filename)
 			else
 				-- otherwise open a window to pick a file
 				window.open_window(matches, M, vim.api.nvim_get_current_buf())
