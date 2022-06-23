@@ -32,10 +32,6 @@ local defaults = {
 	rememberBuffers = true,
 }
 
-local log = function(var)
-	print(vim.inspect(var))
-end
-
 -- Find the potential other file(s)
 -- Returns a table of matches.
 local findOther = function(filename, context)
