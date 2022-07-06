@@ -63,7 +63,18 @@ local findOther = function(filename, context)
 
 			local mappingMatches = vim.fn.glob(result, true, true)
 			for _, value in pairs(mappingMatches) do
-				table.insert(matches, { context = mapping.context, filename = value })
+
+				-- check wether the file is already added to the result
+				local found = false
+				for _, checkValue in pairs(matches) do
+					if checkValue.filename == value then
+						found = true
+					end
+				end
+
+				if (found == false and filename ~= value) then
+					table.insert(matches, { context = mapping.context, filename = value })
+				end
 			end
 		end
 	end
@@ -125,7 +136,12 @@ end
 
 -- Actual opening
 local open = function(context, openCommand)
-	local fileFromBuffer = getOtherFileFromBuffer()
+	local fileFromBuffer = nil
+
+	-- only check for remembered value if no context is given.
+	if (context == nil) then
+		fileFromBuffer = getOtherFileFromBuffer()
+	end
 	-- when we had a match before, open that
 	if fileFromBuffer then
 		vim.api.nvim_command(":" .. openCommand .. " " .. fileFromBuffer)

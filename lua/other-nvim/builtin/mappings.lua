@@ -77,6 +77,23 @@ M.angular = {
 				context = "test"
 			}
 		}
+	},
+	{
+		pattern = "/(.*)/(.*)/.*.spec.ts$",
+		target = {
+			{
+				target = "/%1/%2/%2.component.html",
+				context = "html"
+			},
+			{
+				target = "/%1/%2/%2.component.scss",
+				context = "scss"
+			},
+			{
+				target = "/%1/%2/%2.component.ts",
+				context = "component"
+			}
+		}
 	}
 }
 
