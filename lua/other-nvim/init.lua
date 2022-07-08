@@ -196,4 +196,8 @@ M.clear = function()
 	vim.b.onv_otherFile = nil
 end
 
+M.findOther = function(context)
+        return findOther(vim.api.nvim_buf_get_name(0), context or nil)
+end
+
 return M
