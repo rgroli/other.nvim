@@ -1,12 +1,12 @@
 local rootPath = vim.loop.cwd()
 
 -- Getting the content of a buffer as lua table.
-function getBufferContent(buffer)
+local function getBufferContent(buffer)
 	return vim.api.nvim_buf_get_lines(buffer, 0, vim.api.nvim_buf_line_count(buffer), false)
 end
 
 -- Closing all buffers.
-function closeAllBuffers()
+local function closeAllBuffers()
 	local buffers = vim.api.nvim_list_bufs()
 	for _, buffer in pairs(buffers) do
 		if vim.api.nvim_buf_is_loaded(buffer) and vim.api.nvim_buf_is_valid(buffer) then

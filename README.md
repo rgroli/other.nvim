@@ -25,6 +25,7 @@ After setting up the plugin with builtin or custom mapping, it provides this set
 For each command you can pass an optional `context` which is described under mappings.
 For example `:Other test` could be used to open the testcase for the current buffer.
 
+The last list of possible matches is stored in the global variable `vim.g.other_lastmatches`. The last file opened with the plugin is stored in the global variable `vim.g.other_lastopened`. This might be useful for integration with other plugins.
 
 ## Installation / Setup ##
 ```

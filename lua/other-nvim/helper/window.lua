@@ -1,5 +1,7 @@
 local M = {}
 
+local util = require("other-nvim.helper.util")
+
 local _caller, _callerBuffer
 
 local lastfile = nil
@@ -32,7 +34,7 @@ local function _openFile(command)
 	lastfile = filename
 	M.close_window()
 	vim.api.nvim_set_current_buf(_callerBuffer)
-	vim.api.nvim_command(command .. " " .. filename)
+	util.openFile(command, filename)
 end
 
 -- Set the keybindings

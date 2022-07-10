@@ -1,5 +1,11 @@
 local M = {}
 
+-- Actual opening
+function M.openFile(openCommand, filename)
+	vim.api.nvim_command(":" .. openCommand .. " " .. filename)
+	vim.g.other_lastopened = filename
+end
+
 -- Helper for escaping the lua-regexes.
 function M.escape_pattern(text)
 	return text:gsub("([^%w])", "%%%1")
@@ -26,6 +32,5 @@ function M.getFirstFileInDirectory(path)
 		end
 	end
 end
-
 
 return M
