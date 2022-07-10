@@ -6,7 +6,7 @@ local _caller, _callerBuffer
 
 local lastfile = nil
 local buf, win
-local head
+local matches
 
 local colSeparator = " | "
 local maxContextLength = 0
@@ -23,17 +23,17 @@ end
 
 -- Actually opening the file
 local function _openFile(command)
-	local str = vim.api.nvim_get_current_line()
-	local filename = ""
-	if maxContextLength > 0 then
-		filename = string.sub(str, maxContextLength + #colSeparator + 1)
-	else
-		filename = str
-	end
-	filename = head .. filename
+	-- Getting the current line number
+	local pos = vim.api.nvim_win_get_cursor(0)[1]
+
+	-- reading the filename from the matches table
+	local filename = matches[pos].filename
 	lastfile = filename
+
 	M.close_window()
 	vim.api.nvim_set_current_buf(_callerBuffer)
+
+	-- actual opening
 	util.openFile(command, filename)
 end
 
@@ -70,6 +70,7 @@ end
 
 -- Filling the buffer with the files for the given path
 local function _update_view(files)
+	matches = files
 	vim.api.nvim_buf_set_option(buf, "modifiable", true)
 
 	local result = {}
@@ -149,7 +150,6 @@ function M.open_window(files, callerInstance, callerBuffer)
 
 	maxContextLength = _getMaxContextLength(files)
 	lastfile = nil
-	head = files[1].filename:match("^(.*)/.*$") .. "/"
 
 	_buildWindow()
 	_set_mappings()

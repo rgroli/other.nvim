@@ -41,6 +41,7 @@ end
 -- Returns a table of matches.
 local findOther = function(filename, context)
 	local matches = {}
+
 	-- iterate over all the mapping to check if the filename matches against any "pattern")
 	for _, mapping in pairs(options.mappings or {}) do
 		local match
@@ -67,6 +68,7 @@ local findOther = function(filename, context)
 			end
 
 			local mappingMatches = vim.fn.glob(result, true, true)
+
 			for _, value in pairs(mappingMatches) do
 
 				-- check wether the file is already added to the result
