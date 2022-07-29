@@ -15,6 +15,39 @@ M.laravel = {
 	},
 }
 
+local rails_controller_patterns = {
+  { target = "/spec/factories/%1.rb", context = "factories", transformer = "singularize" },
+  { target = "/app/models/%1.rb", context = "models", transformer = "singularize" },
+  { target = "/app/views/%1/**/*.html.*", context = "view" },
+}
+
+M.rails = {
+  {
+    pattern = "/app/models/(.*).rb",
+    target = {
+      { target = "/spec/factories/%1.rb", context = "factories" },
+      { target = "/app/controllers/**/%1_controller.rb", context = "controller", transformer = "pluralize" },
+      { target = "/app/views/%1/**/*.html.*", context = "view", transformer = "pluralize" },
+    },
+  },
+  {
+    pattern = "/app/controllers/.*/(.*)_controller.rb",
+    target = rails_controller_patterns,
+  },
+  {
+    pattern = "/app/controllers/(.*)_controller.rb",
+    target = rails_controller_patterns,
+  },
+  {
+    pattern = "/app/views/(.*)/.*.html.*",
+    target = {
+      { target = "/spec/factories/%1.rb", context = "factories", transformer = "singularize" },
+      { target = "/app/models/%1.rb", context = "models", transformer = "singularize" },
+      { target = "/app/controllers/**/%1_controller.rb", context = "controller", transformer = "pluralize" },
+    },
+  }
+}
+
 M.livewire = {
 	{
 		pattern = "/app/Http/Livewire/(.*)/.*php",
