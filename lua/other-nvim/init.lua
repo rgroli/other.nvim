@@ -23,8 +23,8 @@ local defaults = {
 	transformers = {
 		camelToKebap = transformers.camelToKebap,
 		kebapToCamel = transformers.kebapToCamel,
-    pluralize = transformers.pluralize,
-    singularize = transformers.singularize
+		pluralize = transformers.pluralize,
+		singularize = transformers.singularize
 	},
 
 	-- When a mapping requires an initial selection of the other file, this setting controls,
