@@ -65,6 +65,7 @@ require("other-nvim").setup({
 		"livewire",
 		"angular",
 		"laravel",
+		"rails",
 	},
 })
 
@@ -245,7 +246,7 @@ For instance when something like `some-folder` is part of the pattern it should 
 
 
 #### Builtin Mappings ####
-Right now there are builtin mappings for `angular`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
+Right now there are builtin mappings for `angular`, `rails`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
 To use the builtin mappings they can be passed as string to the mappings in the setup.
 
 ```lua
@@ -254,7 +255,8 @@ require("other-nvim").setup({
     mappings = {
         "livewire",
         "laravel",
-        "angular"
+        "angular",
+        "rails"
     }
     -- [...]
 })
