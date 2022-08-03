@@ -40,6 +40,7 @@ require("other-nvim").setup({
         "livewire",
         "angular",
         "laravel",
+        "rails",
         -- custom mapping
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
@@ -131,7 +132,7 @@ require("other-nvim").setup({
 		{
 			pattern = "/src/app/(.*)/.*.ts$",
 			target = "/src/app/%1/%1.component.html",
-            		context = "component" -- optional 
+            		context = "component" -- optional
 		},
 		{
 			pattern = "/src/app/(.*)/.*.html$",
@@ -190,7 +191,7 @@ require("other-nvim").setup({
 })
 ```
 
-this can even be described in shorter syntax: 
+this can even be described in shorter syntax:
 ```lua
 require("other-nvim").setup({
     mappings = {
@@ -235,9 +236,9 @@ A mapping can have the following settings:
 | `transformer` (optional) | A function to transform the captured group of the pattern before it is used in the target.|
 | `context` (optional) | A string defining an extra context beyond the standard mapping. An example would be "test" for opening the test case of a component. The context is also used to display additional information when picking a file in the window.|
 
-💡 **Escaping in 'pattern'** 
+💡 **Escaping in 'pattern'**
 
-When using regexes in the pattern be aware that some characters need to be escaped with an `%`. 
+When using regexes in the pattern be aware that some characters need to be escaped with an `%`.
 These characters need escaping when they should be used literally: `( ) . % + - * ? [ ^ $`
 
 For instance when something like `some-folder` is part of the pattern it should be written as `some%-folder`.

@@ -46,4 +46,38 @@ M.kebapToCamel = function(inputString)
 	return table.concat(pathParts, "/")
 end
 
+M.pluralize = function(inputString)
+  local lastCharacter = inputString:sub(-1, -1)
+
+  if lastCharacter == "y" then
+    local stringWithoutY = inputString:sub(1, -2)
+
+    return stringWithoutY .. "ies"
+  elseif lastCharacter == "s" then
+    return inputString
+  else
+    return inputString .. "s"
+  end
+end
+
+M.singularize = function(inputString)
+  local lastCharacter = inputString:sub(-1, -1)
+
+  local lastThreeCharacters = ""
+
+  if #inputString >= 3 then
+    lastThreeCharacters = inputString:sub(-3, -1)
+  end
+
+  if lastThreeCharacters == "ies" then
+    local stringWithoutIes = inputString:sub(1, -4)
+
+    return stringWithoutIes .. "y"
+  elseif lastCharacter == "s" then
+    return inputString:sub(1, -2)
+  else
+    return inputString
+  end
+end
+
 return M
