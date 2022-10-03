@@ -115,6 +115,11 @@ local defaults = {
 	-- When this option is set to false the reference between the two buffers is never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
+
+	-- How the plugin paints its window borders
+	-- Allowed values are none, single, double, rounded, solid and shadow
+	windowBorder = "none"
+
 }
 ```
 
@@ -123,6 +128,7 @@ local defaults = {
 | `mappings` | Settings to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
 | `rememberBuffers`  | When this option is set to false the reference between two buffers is never saved.|
+| `windowBorder`  | Allowed values are none, single, double, rounded, solid and shadow. (default: none)|
 
 
 ### Mappings ###

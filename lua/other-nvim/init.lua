@@ -32,6 +32,11 @@ local defaults = {
 	-- When this option is set to false reference between the two buffers are never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
+
+	-- How the plugin paints its window borders
+	-- Allowed values are none, single, double, rounded, solid and shadow
+	windowBorder = "none"
+
 }
 
 -- Saving the last matches in a global variable.

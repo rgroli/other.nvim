@@ -186,6 +186,8 @@ local function _buildWindow(linesCount)
 		width = maxContentLength + 2
 	end
 
+	local windowBorder = _caller.getOptions()["windowBorder"]
+
 	local window_config = {
 		relative = "editor",
 		width = width,
@@ -194,7 +196,7 @@ local function _buildWindow(linesCount)
 		row = (maxHeight - height) / 2,
 		style = "minimal",
 		focusable = false,
-		border = "shadow",
+		border = windowBorder,
 	}
 
 	-- setup window buffer
