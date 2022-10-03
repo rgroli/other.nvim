@@ -10,6 +10,7 @@ local matches
 
 local colSeparator = " | "
 local maxContextLength = 0
+local maxContentLength = 0
 local shortcut_chars = {
 	"a",
 	"d",
@@ -62,14 +63,16 @@ local function _openFile(command, position)
 	local pos = position or vim.api.nvim_win_get_cursor(0)[1]
 
 	-- reading the filename from the matches table
-	local filename = matches[pos - 1].filename
-	lastfile = filename
+	if matches[pos - 1] ~= nil then
+		local filename = matches[pos - 1].filename
+		lastfile = filename
 
-	M.close_window()
-	vim.api.nvim_set_current_buf(_callerBuffer)
+		M.close_window()
+		vim.api.nvim_set_current_buf(_callerBuffer)
 
-	-- actual opening
-	util.openFile(command, filename)
+		-- actual opening
+		util.openFile(command, filename)
+	end
 end
 
 -- Set the keybindings
@@ -105,30 +108,28 @@ local function _set_mappings()
 			buf,
 			"n",
 			v,
-			':lua require"other-nvim.helper.window".open_file(' .. i+1 .. ')<cr>',
+			':lua require"other-nvim.helper.window".open_file(' .. i + 1 .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 		vim.api.nvim_buf_set_keymap(
 			buf,
 			"n",
 			v:upper(),
-			':lua require"other-nvim.helper.window".open_file_sp(' .. i+1 .. ')<cr>',
+			':lua require"other-nvim.helper.window".open_file_sp(' .. i + 1 .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 		vim.api.nvim_buf_set_keymap(
 			buf,
 			"n",
 			"<c-" .. v .. ">",
-			':lua require"other-nvim.helper.window".open_file_vs(' .. i+1 .. ')<cr>',
+			':lua require"other-nvim.helper.window".open_file_vs(' .. i + 1 .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 	end
 end
 
--- Filling the buffer with the files for the given path
-local function _update_view(files)
+local function _prepareLines(files)
 	matches = files
-	vim.api.nvim_buf_set_option(buf, "modifiable", true)
 
 	local result = {}
 	for k, file in pairs(files) do
@@ -147,11 +148,19 @@ local function _update_view(files)
 		else
 			result[k] = "  " .. shortcut_chars[k] .. " " .. colSeparator .. "../" .. filename:match("^.+/(.+/.+/.+)$")
 		end
+		if #result[k] > maxContentLength then
+			maxContentLength = #result[k]
+		end
 	end
+	return result
+end
 
-	vim.api.nvim_buf_set_lines(buf, 1, -1, false, result)
+-- Filling the buffer with the files for the given path
+local function _update_view(lines)
+	vim.api.nvim_buf_set_option(buf, "modifiable", true)
+	vim.api.nvim_buf_set_lines(buf, 1, -1, false, lines)
 
-	for k, _ in pairs(files) do
+	for k, _ in pairs(lines) do
 		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k, 2, 3)
 		vim.api.nvim_buf_add_highlight(buf, -1, "Bold", k, 2, 3)
 		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k, 2, 3)
@@ -162,25 +171,27 @@ end
 
 -- Building the window
 local function _buildWindow(linesCount)
-	local width = vim.api.nvim_get_option("columns")
-	local height = vim.api.nvim_get_option("lines")
-
+	local maxWidth = vim.api.nvim_get_option("columns")
+	local maxHeight = vim.api.nvim_get_option("lines")
 	local minWidth = 70
 	local minHeight = 6
-	if linesCount > minHeight then
-		if linesCount < (height - 4) then
-			minHeight = linesCount + 2
-		else
-			minHeight = height - 4
-		end
+
+	local height = minHeight
+	local width = minWidth
+
+	if linesCount > height then
+		height = linesCount + 2
+	end
+	if maxContentLength > width then
+		width = maxContentLength + 2
 	end
 
 	local window_config = {
 		relative = "editor",
-		width = minWidth,
-		height = minHeight,
-		col = (width - minWidth) / 2,
-		row = (height - minHeight) / 2,
+		width = width,
+		height = height,
+		col = (maxWidth - width) / 2,
+		row = (maxHeight - height) / 2,
 		style = "minimal",
 		focusable = false,
 		border = "shadow",
@@ -226,9 +237,10 @@ function M.open_window(files, callerInstance, callerBuffer)
 	maxContextLength = _getMaxContextLength(files)
 	lastfile = nil
 
+	local lines = _prepareLines(files)
 	_buildWindow(#files)
 	_set_mappings()
-	_update_view(files)
+	_update_view(lines)
 end
 
 return M
