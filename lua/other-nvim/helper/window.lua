@@ -8,7 +8,9 @@ local lastfile = nil
 local buf, win
 local matches
 
-local colSeparator = " | "
+local border
+local colSeparator
+
 local maxContextLength = 0
 local maxContentLength = 0
 local shortcut_chars = {
@@ -161,9 +163,8 @@ local function _update_view(lines)
 	vim.api.nvim_buf_set_lines(buf, 1, -1, false, lines)
 
 	for k, _ in pairs(lines) do
-		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k, 2, 3)
-		vim.api.nvim_buf_add_highlight(buf, -1, "Bold", k, 2, 3)
 		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k, 2, 3)
 	end
 
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -186,8 +187,6 @@ local function _buildWindow(linesCount)
 		width = maxContentLength + 2
 	end
 
-	local windowBorder = _caller.getOptions()["windowBorder"]
-
 	local window_config = {
 		relative = "editor",
 		width = width,
@@ -196,7 +195,7 @@ local function _buildWindow(linesCount)
 		row = (maxHeight - height) / 2,
 		style = "minimal",
 		focusable = false,
-		border = windowBorder,
+		border = border,
 	}
 
 	-- setup window buffer
@@ -235,6 +234,10 @@ end
 function M.open_window(files, callerInstance, callerBuffer)
 	_caller = callerInstance
 	_callerBuffer = callerBuffer
+
+	styleOptions = _caller.getOptions()['style']
+	colSeparator = " " .. styleOptions['seperator'] .. " "
+	border = styleOptions['border']
 
 	maxContextLength = _getMaxContextLength(files)
 	lastfile = nil

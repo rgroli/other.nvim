@@ -33,9 +33,14 @@ local defaults = {
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
 
-	-- How the plugin paints its window borders
-	-- Allowed values are none, single, double, rounded, solid and shadow
-	windowBorder = "none"
+	style = {
+		-- How the plugin paints its window borders
+		-- Allowed values are none, single, double, rounded, solid and shadow
+		border = "none",
+
+		-- Column seperator for the window
+		seperator = "|"
+	}
 
 }
 
