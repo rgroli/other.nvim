@@ -65,8 +65,8 @@ local function _openFile(command, position)
 	local pos = position or vim.api.nvim_win_get_cursor(0)[1]
 
 	-- reading the filename from the matches table
-	if matches[pos - 1] ~= nil then
-		local filename = matches[pos - 1].filename
+	if matches[pos] ~= nil then
+		local filename = matches[pos].filename
 		lastfile = filename
 
 		M.close_window()
@@ -110,21 +110,21 @@ local function _set_mappings()
 			buf,
 			"n",
 			v,
-			':lua require"other-nvim.helper.window".open_file(' .. i + 1 .. ")<cr>",
+			':lua require"other-nvim.helper.window".open_file(' .. i .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 		vim.api.nvim_buf_set_keymap(
 			buf,
 			"n",
 			v:upper(),
-			':lua require"other-nvim.helper.window".open_file_sp(' .. i + 1 .. ")<cr>",
+			':lua require"other-nvim.helper.window".open_file_sp(' .. i .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 		vim.api.nvim_buf_set_keymap(
 			buf,
 			"n",
 			"<c-" .. v .. ">",
-			':lua require"other-nvim.helper.window".open_file_vs(' .. i + 1 .. ")<cr>",
+			':lua require"other-nvim.helper.window".open_file_vs(' .. i .. ")<cr>",
 			{ nowait = true, noremap = true, silent = true }
 		)
 	end
@@ -160,11 +160,11 @@ end
 -- Filling the buffer with the files for the given path
 local function _update_view(lines)
 	vim.api.nvim_buf_set_option(buf, "modifiable", true)
-	vim.api.nvim_buf_set_lines(buf, 1, -1, false, lines)
+	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
 	for k, _ in pairs(lines) do
-		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k, 2, 3)
-		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k-1, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k-1, 2, 3)
 	end
 
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -180,11 +180,11 @@ local function _buildWindow(linesCount)
 	local height = minHeight
 	local width = minWidth
 
-	if linesCount > height then
-		height = linesCount + 2
+	if linesCount >= height then
+		height = linesCount
 	end
 	if maxContentLength > width then
-		width = maxContentLength + 2
+		width = maxContentLength
 	end
 
 	local window_config = {
