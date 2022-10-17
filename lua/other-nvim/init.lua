@@ -36,12 +36,11 @@ local defaults = {
 	style = {
 		-- How the plugin paints its window borders
 		-- Allowed values are none, single, double, rounded, solid and shadow
-		border = "none",
+		border = "solid",
 
 		-- Column seperator for the window
-		seperator = "|"
-	}
-
+		seperator = "|",
+	},
 }
 
 -- Saving the last matches in a global variable.
@@ -75,7 +74,7 @@ local findOther = function(filename, context)
 
 			-- get a list of candidates based on the transformed match.
 			-- additional glob-patterns in the target are respected
-			if vim.fn.isdirectory(result) == true then
+			if vim.fn.isdirectory(result) ~= 0 then
 				result = result .. "*"
 			end
 
@@ -189,6 +188,8 @@ end
 M.setup = function(opts)
 	opts.mappings = resolveBuiltinMappings(opts.mappings)
 	options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
+	vim.g.other_lastmatches = {}
+	vim.g.other_lastopened = nil
 end
 
 -- Trying to open another file

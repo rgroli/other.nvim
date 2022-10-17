@@ -1,10 +1,5 @@
 local rootPath = vim.loop.cwd()
 
--- Getting the content of a buffer as lua table.
-local function getBufferContent(buffer)
-	return vim.api.nvim_buf_get_lines(buffer, 0, vim.api.nvim_buf_line_count(buffer), false)
-end
-
 -- Closing all buffers.
 local function closeAllBuffers()
 	local buffers = vim.api.nvim_list_bufs()
@@ -15,106 +10,417 @@ local function closeAllBuffers()
 	end
 end
 
--- Actual Testcases
-describe("angular-mapping", function()
-	it("Show the correct other file", function()
+local function runOther(filename)
+	closeAllBuffers()
+	local fnInput = rootPath .. filename
+
+	vim.api.nvim_command(":e " .. fnInput)
+	vim.api.nvim_command(":Other")
+end
+
+local function checkForStringAtPos(position, string)
+	local lastmatches = vim.g.other_lastmatches
+	local result = nil
+
+	if lastmatches[position] ~= nil then
+		result = lastmatches[position].filename:find(string) ~= nil
+	end
+	if result == nil then
+		print(position, string)
+	end
+	if result == false then
+		print(position, lastmatches[position].filename, string)
+	end
+	return result
+end
+
+describe("rails-mapping", function()
+	it("minitest", function()
 		require("other-nvim").setup({
 			mappings = {
-				{
-					pattern = "/(.*)/(.*)/.*.ts$",
-					target = {
-						{
-							target = "/%1/%2/%2.component.html",
-							context = "html",
-						},
-						{
-							target = "/%1/%2/%2.component.scss",
-							context = "scss",
-						},
-						{
-							target = "/%1/%2/%2.component.spec.ts",
-							context = "test",
-						},
-					},
-				},
-				{
-					pattern = "/(.*)/(.*)/.*.html$",
-					target = {
-						{
-							target = "/%1/%2/%2.component.ts",
-							context = "component",
-						},
-					},
-				},
-				{
-					pattern = "/(.*)/(.*)/.*.scss$",
-					target = {
-						{
-							target = "/%1/%2/%2.component.html",
-							context = "html",
-						},
-						{
-							target = "/%1/%2/%2.component.ts",
-							context = "component",
-						},
-						{
-							target = "/%1/%2/%2.component.spec.ts",
-							context = "test",
-						},
-					},
-				},
+				"rails",
 			},
 		})
-		closeAllBuffers()
-		local fnInput = rootPath
-			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.html"
-		local fnExpected = rootPath
-			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts"
 
-		vim.api.nvim_command(":e " .. fnInput)
-		vim.api.nvim_command(":Other")
+		runOther("/lua/spec/fixtures/rails-minitest/app/channels/user_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/channels/user_channel_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
 
-		assert.equals(fnExpected, vim.api.nvim_buf_get_name(0))
+		runOther("/lua/spec/fixtures/rails-minitest/app/channels/api/v1/feature_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/channels/api/v1/feature_channel_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
 
-		vim.api.nvim_command(":Other")
-		local lines = getBufferContent(0)
+		runOther("/lua/spec/fixtures/rails-minitest/app/channels/user_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/channels/user_channel_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
 
-		assert.equals(lines[1], "html | my-component.component.html")
-		assert.equals(lines[2], "scss | my-component.component.scss")
+		runOther("/lua/spec/fixtures/rails-minitest/app/controllers/api/v1/feature_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/controllers/api/v1/feature_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "test/functional/api/v1/feature_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(3, "test/functional/api/v2/feature_controller_test.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(4, "test/integration/api/v1/feature_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(5, "test/integration/api/v2/feature_controller_test.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(6, "app/channels/api/v1/feature_channel.rb"))
 
-		vim.api.nvim_feedkeys("o", "x", true)
-		assert.equals(fnInput, vim.api.nvim_buf_get_name(0))
+		runOther("/lua/spec/fixtures/rails-minitest/app/controllers/api/v2/feature_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/controllers/api/v2/feature_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "test/functional/api/v1/feature_controller_test.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(3, "test/functional/api/v2/feature_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(4, "test/integration/api/v1/feature_controller_test.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(5, "test/integration/api/v2/feature_controller_test.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/controllers/user_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/controllers/user_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "test/functional/user_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(3, "test/integration/user_controller_test.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(6, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(7, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(10, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(11, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/mailers/user_mailer.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/mailers/user_mailer_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/models/submodule/subfeature.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/models/submodule/subfeature_test.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/models/feature.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/models/feature_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/api/v2/feature_controller.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/models/user.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/models/user_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(5, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/serializers/user_serializer.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/serializers/user_serializer_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/services/user_service.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/services/user_service_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/views/user/create.html")
+		assert.is_true(checkForStringAtPos(1, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/views/user/index.html")
+		assert.is_true(checkForStringAtPos(1, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/workers/user/user_worker.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/workers/user/user_worker_test.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/services/user_service.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/app/workers/general_worker.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/workers/general_worker_test.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/db/migrations/20220923181300_add_email_to_user.rb")
+		assert.is_true(checkForStringAtPos(1, "test/migrations/20220923181300_add_email_to_user_test.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/lib/core_ext/string.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/lib/core_ext/string_test.rb"))
+
+		runOther("/lua/spec/fixtures/rails-minitest/lib/user_helper.rb")
+		assert.is_true(checkForStringAtPos(1, "test/unit/lib/user_helper_test.rb"))
+
 	end)
+	it("rspec", function()
+		require("other-nvim").setup({
+			mappings = {
+				"rails",
+			},
+		})
 
-	it("Show filepicker when there's more than one match", function()
-		closeAllBuffers()
-		local fnInput = rootPath
-			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts"
-		vim.api.nvim_command(":e " .. fnInput)
-		vim.api.nvim_command(":Other")
+		runOther("/lua/spec/fixtures/rails-rspec/app/channels/user_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/channels/user_channel_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
 
-		local lines = getBufferContent(0)
+		runOther("/lua/spec/fixtures/rails-rspec/app/channels/api/v1/feature_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/channels/api/v1/feature_channel_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
 
-		assert.equals(lines[1], "html | my-component.component.html")
-		assert.equals(lines[2], "scss | my-component.component.scss")
+		runOther("/lua/spec/fixtures/rails-rspec/app/channels/user_channel.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/channels/user_channel_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/controllers/api/v1/feature_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/controllers/api/v1/feature_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "spec/functional/api/v1/feature_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(3, "spec/functional/api/v2/feature_controller_spec.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(4, "spec/integration/api/v1/feature_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(5, "spec/integration/api/v2/feature_controller_spec.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(6, "app/channels/api/v1/feature_channel.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/controllers/api/v2/feature_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/controllers/api/v2/feature_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "spec/functional/api/v1/feature_controller_spec.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(3, "spec/functional/api/v2/feature_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(4, "spec/integration/api/v1/feature_controller_spec.rb")) -- WRONG !!!
+		assert.is_true(checkForStringAtPos(5, "spec/integration/api/v2/feature_controller_spec.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/controllers/user_controller.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/controllers/user_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "spec/functional/user_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(3, "spec/integration/user_controller_spec.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(6, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(7, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(10, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(11, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/mailers/user_mailer.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/mailers/user_mailer_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/models/submodule/subfeature.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/models/submodule/subfeature_spec.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/models/feature.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/models/feature_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/api/v2/feature_controller.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/models/user.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/models/user_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(5, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/serializers/user_serializer.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/serializers/user_serializer_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/services/user_service.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/services/user_service_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/views/user/create.html")
+		assert.is_true(checkForStringAtPos(1, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/views/user/index.html")
+		assert.is_true(checkForStringAtPos(1, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(5, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(6, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/services/user_service.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/workers/user/user_worker.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/workers/user/user_worker_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "app/models/user.rb"))
+		assert.is_true(checkForStringAtPos(3, "app/controllers/user_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/views/user/create.html"))
+		assert.is_true(checkForStringAtPos(5, "app/views/user/index.html"))
+		assert.is_true(checkForStringAtPos(6, "app/channels/user_channel.rb"))
+		assert.is_true(checkForStringAtPos(7, "app/mailers/user_mailer.rb"))
+		assert.is_true(checkForStringAtPos(8, "app/serializers/user_serializer.rb"))
+		assert.is_true(checkForStringAtPos(9, "app/services/user_service.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/workers/general_worker.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/workers/general_worker_spec.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/db/migrations/20220923181300_add_email_to_user.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/migrations/20220923181300_add_email_to_user_spec.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/lib/core_ext/string.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/lib/core_ext/string_spec.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/lib/user_helper.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/unit/lib/user_helper_spec.rb"))
+
 	end)
+end)
 
-	it("Show filepicker when there's more than one match and open a file", function()
-		closeAllBuffers()
+describe("angular", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			mappings = {
+				"angular",
+			},
+		})
 
-		local fnInput = rootPath
-			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts"
-		local fnExpected = rootPath
-			.. "/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.scss"
-		vim.api.nvim_command(":e " .. fnInput)
-		vim.api.nvim_command(":Other")
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.html")
+		assert.is_true(checkForStringAtPos(1, "components/my%-component/my%-component.component.ts"))
+		assert.is_true(checkForStringAtPos(2, "components/my%-component/my%-component.component.scss"))
+		assert.is_true(checkForStringAtPos(3, "components/my%-component/my%-component.component.spec.ts"))
 
-		local lines = getBufferContent(0)
-		assert.equals(lines[1], "html | my-component.component.html")
-		assert.equals(lines[2], "scss | my-component.component.scss")
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts")
+		assert.is_true(checkForStringAtPos(1, "components/my%-component/my%-component.component.html"))
+		assert.is_true(checkForStringAtPos(2, "components/my%-component/my%-component.component.scss"))
+		assert.is_true(checkForStringAtPos(3, "components/my%-component/my%-component.component.spec.ts"))
 
-		vim.api.nvim_feedkeys("j", "x", true)
-		vim.api.nvim_feedkeys("o", "x", true)
-		assert.equals(vim.api.nvim_buf_get_name(0), fnExpected)
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.scss")
+		assert.is_true(checkForStringAtPos(1, "components/my%-component/my%-component.component.html"))
+		assert.is_true(checkForStringAtPos(2, "components/my%-component/my%-component.component.ts"))
+		assert.is_true(checkForStringAtPos(3, "components/my%-component/my%-component.component.spec.ts"))
+
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.spec.ts")
+		assert.is_true(checkForStringAtPos(1, "components/my%-component/my%-component.component.html"))
+		assert.is_true(checkForStringAtPos(2, "components/my%-component/my%-component.component.scss"))
+		assert.is_true(checkForStringAtPos(3, "components/my%-component/my%-component.component.ts"))
+
+		runOther("/lua/spec/fixtures/angular/src/my-module/my-component/my-component.component.html")
+		assert.is_true(checkForStringAtPos(1, "my%-module/my%-component/my%-component.component.ts"))
+		assert.is_true(checkForStringAtPos(2, "my%-module/my%-component/my%-component.component.spec.ts"))
+
+		runOther("/lua/spec/fixtures/angular/src/my-module/my-component/my-component.component.ts")
+		assert.is_true(checkForStringAtPos(1, "my%-module/my%-component/my%-component.component.html"))
+		assert.is_true(checkForStringAtPos(2, "my%-module/my%-component/my%-component.component.spec.ts"))
+
+		runOther("/lua/spec/fixtures/angular/src/my-module/my-component/my-component.component.spec.ts")
+		assert.is_true(checkForStringAtPos(1, "my%-module/my%-component/my%-component.component.html"))
+		assert.is_true(checkForStringAtPos(2, "my%-module/my%-component/my%-component.component.ts"))
+	end)
+end)
+
+describe("laravel", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			mappings = {
+				"laravel",
+			},
+		})
+
+		runOther("/lua/spec/fixtures/laravel/app/Http/Controllers/BarController.php")
+		assert.is_true(checkForStringAtPos(1, "views/bar/edit.blade.php"))
+		assert.is_true(checkForStringAtPos(2, "views/bar/index.blade.php"))
+
+		runOther("/lua/spec/fixtures/laravel/app/Http/Controllers/FooController.php")
+		assert.is_true(checkForStringAtPos(1, "views/foo/index.blade.php"))
+	end)
+end)
+
+describe("livewire", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			mappings = {
+				"livewire",
+			},
+		})
+
+		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
+		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
+		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
+
 	end)
 end)

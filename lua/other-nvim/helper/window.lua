@@ -175,16 +175,16 @@ local function _buildWindow(linesCount)
 	local maxWidth = vim.api.nvim_get_option("columns")
 	local maxHeight = vim.api.nvim_get_option("lines")
 	local minWidth = 70
-	local minHeight = 6
+	local minHeight = 2
 
 	local height = minHeight
 	local width = minWidth
 
 	if linesCount >= height then
-		height = linesCount
+		height = linesCount 
 	end
 	if maxContentLength > width then
-		width = maxContentLength
+		width = maxContentLength + 2
 	end
 
 	local window_config = {
@@ -205,6 +205,7 @@ local function _buildWindow(linesCount)
 
 	win = vim.api.nvim_open_win(buf, true, window_config)
 	vim.api.nvim_win_set_option(win, "cursorline", true)
+	vim.api.nvim_win_set_option(win, 'winhighlight', 'Normal:NormalFloat,FloatBorder:NormalFloat')
 end
 
 -- -- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
