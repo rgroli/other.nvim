@@ -55,7 +55,7 @@ local findOther = function(filename, context)
 		if match ~= nil then
 			-- if we have a match, optionally transforn the match
 			if mapping.transformer ~= nil then
-				local transformedMatch = defaults.transformers[mapping.transformer](match)
+				local transformedMatch = options.transformers[mapping.transformer](match)
 				filename, _ = filename:gsub(util.escape_pattern(match), transformedMatch)
 			end
 
