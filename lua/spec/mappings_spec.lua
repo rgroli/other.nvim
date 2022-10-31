@@ -114,6 +114,7 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(1, "test/unit/models/feature_test.rb"))
 		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
 		assert.is_true(checkForStringAtPos(3, "app/controllers/api/v2/feature_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/api/v1/feature_channel.rb"))
 
 		runOther("/lua/spec/fixtures/rails-minitest/app/models/user.rb")
 		assert.is_true(checkForStringAtPos(1, "test/unit/models/user_test.rb"))

@@ -36,7 +36,7 @@ local rails_alternative_targets = {
 	{ context = "controller", target = "/app/controllers/**/%1_controller.rb" },
 	{ context = "view", target = "/app/views/%1/*.html*" },
 	{ context = "view", target = "/app/views/%1/*.html*", transformer = "singularize" },
-	{ context = "channel", target = "/app/channels/%1_channel.rb" },
+	{ context = "channel", target = "/app/channels/**/%1_channel.rb" },
 	{ context = "mailer", target = "/app/mailers/%1_mailer.rb" },
 	{ context = "serializer", target = "/app/serializers/%1_serializer.rb" },
 	{ context = "mailer", target = "/app/mailers/%1_mailer.rb" },
