@@ -69,7 +69,7 @@ require("other-nvim").setup({
 
         -- Column seperator for the window
         seperator = "|",
-	},
+    },
 })
 ```
 
