@@ -24,7 +24,7 @@ local defaults = {
 		camelToKebap = transformers.camelToKebap,
 		kebapToCamel = transformers.kebapToCamel,
 		pluralize = transformers.pluralize,
-		singularize = transformers.singularize
+		singularize = transformers.singularize,
 	},
 
 	-- When a mapping requires an initial selection of the other file, this setting controls,
@@ -32,6 +32,15 @@ local defaults = {
 	-- When this option is set to false reference between the two buffers are never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
+
+	style = {
+		-- How the plugin paints its window borders
+		-- Allowed values are none, single, double, rounded, solid and shadow
+		border = "solid",
+
+		-- Column seperator for the window
+		seperator = "|",
+	},
 }
 
 -- Saving the last matches in a global variable.
@@ -53,35 +62,35 @@ local findOther = function(filename, context)
 		end
 
 		if match ~= nil then
+			local fn = filename
 			-- if we have a match, optionally transforn the match
 			if mapping.transformer ~= nil then
 				local transformedMatch = options.transformers[mapping.transformer](match)
-				filename, _ = filename:gsub(util.escape_pattern(match), transformedMatch)
+				fn, _ = filename:gsub(util.escape_pattern(match), transformedMatch)
 			end
 
 			-- return (transformed) match with "target"
-			local result, _ = filename:gsub(mapping.pattern, mapping.target)
+			local result, _ = fn:gsub(mapping.pattern, mapping.target)
 
 			-- get a list of candidates based on the transformed match.
 			-- additional glob-patterns in the target are respected
-			-- return vim.fn.glob(result, true, true)
-			if vim.fn.isdirectory(result) then
+			if vim.fn.isdirectory(result) ~= 0 then
 				result = result .. "*"
 			end
 
 			local mappingMatches = vim.fn.glob(result, true, true)
 
 			for _, value in pairs(mappingMatches) do
-
 				-- check wether the file is already added to the result
 				local found = false
 				for _, checkValue in pairs(matches) do
+					vim.inspect(checkValue)
 					if checkValue.filename == value then
 						found = true
 					end
 				end
 
-				if (found == false and filename ~= value) then
+				if found == false and fn ~= value then
 					table.insert(matches, { context = mapping.context, filename = value })
 				end
 			end
@@ -132,7 +141,6 @@ local resolveBuiltinMappings = function(mappings)
 	return result
 end
 
-
 M.setOtherFileToBuffer = function(otherFile, bufferHandle)
 	if options.rememberBuffers == true then
 		if otherFile then
@@ -150,7 +158,7 @@ local open = function(context, openCommand)
 	local fileFromBuffer = nil
 
 	-- only check for remembered value if no context is given.
-	if (context == nil) then
+	if context == nil then
 		fileFromBuffer = getOtherFileFromBuffer()
 	end
 	-- when we had a match before, open that
@@ -180,6 +188,8 @@ end
 M.setup = function(opts)
 	opts.mappings = resolveBuiltinMappings(opts.mappings)
 	options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
+	vim.g.other_lastmatches = {}
+	vim.g.other_lastopened = nil
 end
 
 -- Trying to open another file

@@ -5,13 +5,15 @@ Open alternative files for the current buffer.
 With this plugin you can open other/related files for the currently active buffer.
 For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
 
-#### The plugin in an angular project.
+The plugin is inspired by plugins like [a.vim](https://github.com/vim-scripts/a.vim), [vim-projectionist](https://github.com/tpope/vim-projectionist) or [AltN8](https://plugins.jetbrains.com/plugin/1475-altn8)
+
+#### The plugin in a rails project.
 ![screen-gif](./other-nvim.gif)
 
 The plugin opens a file picker when there's no perfect match. By default it memorizes the selection.
 
 ## Dependencies ##
-Neovim > 0.5
+Neovim > 0.7
 
 ## Usage ##
 After setting up the plugin with builtin or custom mapping, it provides this set of command:
@@ -26,6 +28,12 @@ For each command you can pass an optional `context` which is described under map
 For example `:Other test` could be used to open the testcase for the current buffer.
 
 The last list of possible matches is stored in the global variable `vim.g.other_lastmatches`. The last file opened with the plugin is stored in the global variable `vim.g.other_lastopened`. This might be useful for integration with other plugins.
+
+### Keybindings
+
+When the file-picker is opened it can be used with the following keybindings: 
+![screen-gif](./other-nvim-overlay.jpg)
+
 
 ## Installation / Setup ##
 ```
@@ -53,7 +61,15 @@ require("other-nvim").setup({
         lowercase = function (inputString)
             return inputString:lower()
         end
-    }
+    },
+    style = {
+        -- How the plugin paints its window borders
+        -- Allowed values are none, single, double, rounded, solid and shadow
+        border = "solid",
+
+        -- Column seperator for the window
+        seperator = "|",
+	},
 })
 ```
 
@@ -115,6 +131,16 @@ local defaults = {
 	-- When this option is set to false the reference between the two buffers is never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
+
+	style = {
+		-- How the plugin paints its window borders
+		-- Allowed values are none, single, double, rounded, solid and shadow
+		border = "solid",
+
+		-- Column seperator for the window
+		seperator = "|"
+	}
+
 }
 ```
 
@@ -123,6 +149,7 @@ local defaults = {
 | `mappings` | Settings to find other/alternative files for the current buffer. |
 | `transformers`  | List of functions which are used to transform values when mapping the target file. |
 | `rememberBuffers`  | When this option is set to false the reference between two buffers is never saved.|
+| `style`  | Options to change the appearance of the window.|
 
 
 ### Mappings ###
@@ -248,7 +275,10 @@ For instance when something like `some-folder` is part of the pattern it should 
 
 
 #### Builtin Mappings ####
-Right now there are builtin mappings for `angular`, `rails`, `laravel` and `livewire`. The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
+Right now there are builtin mappings for `angular`, `rails`, `laravel` and `livewire`. 
+The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.
+
+The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings.lua). I'd ❤️ to see contributions to extend this list.
 To use the builtin mappings they can be passed as string to the mappings in the setup.
 
 ```lua
