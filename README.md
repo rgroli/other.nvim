@@ -34,6 +34,8 @@ The last list of possible matches is stored in the global variable `vim.g.other_
 When the file-picker is opened it can be used with the following keybindings: 
 ![screen-gif](./other-nvim-overlay.jpg)
 
+💡 Additionally you can open the selected line in a split without the shortcut by pressing `s` and `v` to open it in a vertical split.
+
 
 ## Installation / Setup ##
 ```
