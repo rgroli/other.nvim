@@ -69,6 +69,13 @@ require("other-nvim").setup({
 
         -- Column seperator for the window
         seperator = "|",
+
+		-- width of the window in percent. e.g. 0.5 is 50%, is 100%
+		width = 0.7,
+
+		-- min height in rows.
+		-- when more columns are needed this value is extended automatically
+		minHeight = 2
     },
 })
 ```

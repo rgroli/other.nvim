@@ -8,11 +8,12 @@ local lastfile = nil
 local buf, win
 local matches
 
+local width, height
+
 local border
 local colSeparator
 
 local maxContextLength = 0
-local maxContentLength = 0
 local shortcut_chars = {
 	"a",
 	"d",
@@ -145,13 +146,16 @@ local function _prepareLines(files)
 				.. context
 				.. string.rep(" ", maxContextLength - #context)
 				.. colSeparator
-				.. "../"
-				.. filename:match("^.+/(.+/.+/.+)$")
+
+			local fn = ""
+			-- cut filename from the right side minus the window width and result[k]
+			fn = string.sub(filename, -width + #result[k] + 4, #filename)
+			if (#fn < #filename) then
+				fn = ".." .. fn
+			end 
+			result[k] = result[k] .. fn .. "  "
 		else
-			result[k] = "  " .. shortcut_chars[k] .. " " .. colSeparator .. "../" .. filename:match("^.+/(.+/.+/.+)$")
-		end
-		if #result[k] > maxContentLength then
-			maxContentLength = #result[k]
+			result[k] = "  " .. shortcut_chars[k] .. " " .. colSeparator .. "../" .. filename
 		end
 	end
 	return result
@@ -163,8 +167,8 @@ local function _update_view(lines)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
 	for k, _ in pairs(lines) do
-		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k-1, 2, 3)
-		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k-1, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k - 1, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k - 1, 2, 3)
 	end
 
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -174,17 +178,9 @@ end
 local function _buildWindow(linesCount)
 	local maxWidth = vim.api.nvim_get_option("columns")
 	local maxHeight = vim.api.nvim_get_option("lines")
-	local minWidth = 70
-	local minHeight = 2
-
-	local height = minHeight
-	local width = minWidth
 
 	if linesCount >= height then
-		height = linesCount 
-	end
-	if maxContentLength > width then
-		width = maxContentLength + 2
+		height = linesCount
 	end
 
 	local window_config = {
@@ -205,7 +201,7 @@ local function _buildWindow(linesCount)
 
 	win = vim.api.nvim_open_win(buf, true, window_config)
 	vim.api.nvim_win_set_option(win, "cursorline", true)
-	vim.api.nvim_win_set_option(win, 'winhighlight', 'Normal:NormalFloat,FloatBorder:NormalFloat')
+	vim.api.nvim_win_set_option(win, "winhighlight", "Normal:NormalFloat,FloatBorder:NormalFloat")
 end
 
 -- -- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
@@ -236,17 +232,19 @@ function M.open_window(files, callerInstance, callerBuffer)
 	_caller = callerInstance
 	_callerBuffer = callerBuffer
 
-	styleOptions = _caller.getOptions()['style']
-	colSeparator = " " .. styleOptions['seperator'] .. " "
-	border = styleOptions['border']
+	styleOptions = _caller.getOptions()["style"]
+	colSeparator = " " .. styleOptions["seperator"] .. " "
+	border = styleOptions["border"]
+
+	width = math.floor(styleOptions["width"] * vim.api.nvim_get_option("columns"))
+	height = styleOptions["minHeight"]
 
 	maxContextLength = _getMaxContextLength(files)
 	lastfile = nil
 
-	local lines = _prepareLines(files)
 	_buildWindow(#files)
 	_set_mappings()
-	_update_view(lines)
+	_update_view(_prepareLines(files))
 end
 
 return M
