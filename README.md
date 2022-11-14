@@ -34,6 +34,8 @@ The last list of possible matches is stored in the global variable `vim.g.other_
 When the file-picker is opened it can be used with the following keybindings: 
 ![screen-gif](./other-nvim-overlay.jpg)
 
+💡 Additionally you can open the selected line in a split without the shortcut by pressing `s` and `v` to open it in a vertical split.
+
 
 ## Installation / Setup ##
 ```
@@ -70,7 +72,7 @@ require("other-nvim").setup({
         -- Column seperator for the window
         seperator = "|",
 
-	-- width of the window in percent. e.g. 0.5 is 50%, is 100%
+	-- width of the window in percent. e.g. 0.5 is 50%, 1.0 is 100%
 	width = 0.7,
 
 	-- min height in rows.
