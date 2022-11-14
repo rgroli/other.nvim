@@ -27,27 +27,26 @@ local shortcut_chars = {
 	"p",
 	"n",
 	"m",
+	"q",
+	"r",
+	"t",
+	"z",
+	"b",
+	"c",
+	"x",
 }
 
 -- Disable the following keys in the window
 local other_chars = {
 	"a",
-	"b",
-	"c",
 	"d",
 	"e",
 	"f",
 	"g",
 	"i",
-	"n",
-	"p",
-	"r",
-	"t",
 	"u",
 	"w",
-	"x",
 	"y",
-	"z",
 }
 
 local function _getMaxContextLength(files)
@@ -138,9 +137,10 @@ local function _prepareLines(files)
 	for k, file in pairs(files) do
 		local filename = file.filename
 		local context = file.context or ""
+		local shortcut = shortcut_chars[k] or ""
 		if maxContextLength > 0 then
 			result[k] = "  "
-				.. shortcut_chars[k]
+				.. shortcut
 				.. " "
 				.. colSeparator
 				.. context
@@ -234,6 +234,7 @@ function M.open_window(files, callerInstance, callerBuffer)
 
 	styleOptions = _caller.getOptions()["style"]
 	colSeparator = " " .. styleOptions["seperator"] .. " "
+	print("colSeparator: " .. colSeparator)
 	border = styleOptions["border"]
 
 	width = math.floor(styleOptions["width"] * vim.api.nvim_get_option("columns"))
