@@ -234,7 +234,6 @@ function M.open_window(files, callerInstance, callerBuffer)
 
 	styleOptions = _caller.getOptions()["style"]
 	colSeparator = " " .. styleOptions["seperator"] .. " "
-	print("colSeparator: " .. colSeparator)
 	border = styleOptions["border"]
 
 	width = math.floor(styleOptions["width"] * vim.api.nvim_get_option("columns"))
