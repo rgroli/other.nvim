@@ -15,7 +15,6 @@ local transformers = require("other-nvim.builtin.transformers")
 
 -- default settings
 local defaults = {
-
 	-- by default there are no mappings enabled
 	mappings = {},
 
@@ -27,11 +26,47 @@ local defaults = {
 		singularize = transformers.singularize,
 	},
 
+	-- Should the window show files which do not exist yet based on
+	-- pattern matching. Selecting the files will create the file.
+	showMissingFiles = true,
+
 	-- When a mapping requires an initial selection of the other file, this setting controls,
 	-- wether the selection should be remembered for the current user session.
 	-- When this option is set to false reference between the two buffers are never saved.
 	-- Existing references can be removed on the buffer with :OtherClear
 	rememberBuffers = true,
+
+	keybindings = {
+		["<cr>"] = "open_file()",
+		["<esc>"] = "close_window()",
+		o = "open_file()",
+		q = "close_window()",
+		v = "open_file_vs()",
+		s = "open_file_sp()",
+	},
+
+	hooks = {
+		-- This hook which is executed when the file-picker is shown.
+		-- It could be used to filter or reorder the files in the filepicker.
+		-- The function must return a lua table with the same structure as the input parameter.
+		--
+		-- The input parameter "files" is a lua table with each entry containing:
+		-- @param table (filename (string), context (string), exists (boolean))
+		-- @return table
+		filePickerBeforeShow = function(files)
+			return files
+		end,
+
+		-- This hook is called whenever a file is about to be opened.
+		-- One example how this can be used: a non existing file needs to be opened by another plugin, which provides a template.
+		--
+		-- @param filename (string) the full-path of the file
+		-- @param exists (boolean) doess the file already exist
+		-- @return (boolean) When true (default) the plugin takes care of opening the file, when the function returns false this indicated that opening of the file is done in the hook.
+		onOpenFile = function(filename, exists)
+			return true
+		end,
+	},
 
 	style = {
 		-- How the plugin paints its window borders
@@ -41,12 +76,15 @@ local defaults = {
 		-- Column seperator for the window
 		seperator = "|",
 
-		-- width of the window in percent. e.g. 0.5 is 50%, is 100%
+		-- Indicator showing that the file does not yet exist
+		newFileIndicator = "(* new *)",
+
+		-- width of the window in percent. e.g. 0.5 is 50%, 1 is 100%
 		width = 0.7,
 
 		-- min height in rows.
 		-- when more columns are needed this value is extended automatically
-		minHeight = 2
+		minHeight = 2,
 	},
 }
 
@@ -60,7 +98,7 @@ end
 local findOther = function(filename, context)
 	local matches = {}
 
-	-- iterate over all the mapping to check if the filename matches against any "pattern")
+	-- iterate over all the mapping to check if the filename matches against *any* pattern)
 	for _, mapping in pairs(options.mappings or {}) do
 		local match
 
@@ -70,7 +108,7 @@ local findOther = function(filename, context)
 
 		if match ~= nil then
 			local fn = filename
-			-- if we have a match, optionally transforn the match
+			-- if we have a match, optionally transform the match
 			if mapping.transformer ~= nil then
 				local transformedMatch = options.transformers[mapping.transformer](match)
 				fn, _ = filename:gsub(util.escape_pattern(match), transformedMatch)
@@ -79,13 +117,28 @@ local findOther = function(filename, context)
 			-- return (transformed) match with "target"
 			local result, _ = fn:gsub(mapping.pattern, mapping.target)
 
+			local showMissingFiles = options.showMissingFiles
+			local dirMatching = false
+			local mappingMatches = {}
+
+			-- if result includes wildcards it can't be a suggested missing file,
+			-- because it can't be created on opening
+			if result:match("*") then
+				showMissingFiles = false
+			end
+
 			-- get a list of candidates based on the transformed match.
 			-- additional glob-patterns in the target are respected
 			if vim.fn.isdirectory(result) ~= 0 then
 				result = result .. "*"
+				dirMatching = true
 			end
 
-			local mappingMatches = vim.fn.glob(result, true, true)
+			if showMissingFiles and not dirMatching then
+				table.insert(mappingMatches, result)
+			else
+				mappingMatches = vim.fn.glob(result, true, true)
+			end
 
 			for _, value in pairs(mappingMatches) do
 				-- check wether the file is already added to the result
@@ -98,11 +151,27 @@ local findOther = function(filename, context)
 				end
 
 				if found == false and fn ~= value then
-					table.insert(matches, { context = mapping.context, filename = value })
+					table.insert(matches, {
+						context = mapping.context,
+						filename = value,
+						exists = (vim.fn.filereadable(value) == 1 and true or false),
+					})
 				end
 			end
 		end
 	end
+
+	if options.showMissingFiles == true then
+		-- non existing entries to the bottom
+		table.sort(matches, function(a, b)
+			if a.exists == true and b.exists == false then
+				return true
+			else
+				return false
+			end
+		end)
+	end
+
 	saveLastMatches(matches)
 	return matches
 end
@@ -170,7 +239,7 @@ local open = function(context, openCommand)
 	end
 	-- when we had a match before, open that
 	if fileFromBuffer then
-		util.openFile(openCommand, fileFromBuffer)
+		util.openFile(openCommand, fileFromBuffer, options.hooks.onOpenFile)
 	else
 		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
 		local matchesCount = #matches
@@ -178,8 +247,9 @@ local open = function(context, openCommand)
 			-- when dealing with a single file -> just open it
 			if matchesCount == 1 then
 				M.setOtherFileToBuffer(matches[1].filename, vim.api.nvim_get_current_buf())
-				util.openFile(openCommand, matches[1].filename)
+				util.openFile(openCommand, matches[1].filename, options.hooks.onOpenFile)
 			else
+				matches = options.hooks.filePickerBeforeShow(matches)
 				-- otherwise open a window to pick a file
 				window.open_window(matches, M, vim.api.nvim_get_current_buf())
 			end

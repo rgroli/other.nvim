@@ -1,9 +1,13 @@
 local M = {}
 
 -- Actual opening
-function M.openFile(openCommand, filename)
-	vim.api.nvim_command(":" .. openCommand .. " " .. filename)
-	vim.g.other_lastopened = filename
+function M.openFile(openCommand, filename, onOpenFileHook)
+	local exists = (vim.fn.filereadable(filename) == 1 and true or false)
+	local shouldOpenFile = onOpenFileHook(filename, exists)
+	if shouldOpenFile then
+		vim.api.nvim_command(":" .. openCommand .. " " .. filename)
+		vim.g.other_lastopened = filename
+	end
 end
 
 -- Helper for escaping the lua-regexes.
@@ -31,6 +35,16 @@ function M.getFirstFileInDirectory(path)
 			return f
 		end
 	end
+end
+
+-- Getting the index of an element in a two-dimensional lua table
+function M.indexOf(array, value)
+    for i, v in ipairs(array) do
+        if v == value then
+            return i
+        end
+    end
+    return nil
 end
 
 return M

@@ -2,7 +2,7 @@ local M = {}
 
 local util = require("other-nvim.helper.util")
 
-local _caller, _callerBuffer
+local otherInstance, currentBuffer
 
 local lastfile = nil
 local buf, win
@@ -12,6 +12,8 @@ local width, height
 
 local border
 local colSeparator
+local newFileIndicator
+local keybindings
 
 local maxContextLength = 0
 local shortcut_chars = {
@@ -23,31 +25,31 @@ local shortcut_chars = {
 	"e",
 	"t",
 	"u",
-	"i",
+	"o",
 	"p",
 	"n",
 	"m",
-	"q",
 	"r",
 	"t",
 	"z",
 	"b",
+	"v",
+	"s",
 	"c",
 	"x",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
 }
 
 -- Disable the following keys in the window
-local other_chars = {
-	"a",
-	"d",
-	"e",
-	"f",
-	"g",
-	"i",
-	"u",
-	"w",
-	"y",
-}
+local disabled_chars = {}
 
 local function _getMaxContextLength(files)
 	local result = 0
@@ -70,41 +72,38 @@ local function _openFile(command, position)
 		lastfile = filename
 
 		M.close_window()
-		vim.api.nvim_set_current_buf(_callerBuffer)
+		vim.api.nvim_set_current_buf(currentBuffer)
 
 		-- actual opening
-		util.openFile(command, filename)
+		util.openFile(command, filename, otherInstance.getOptions()["hooks"].onOpenFile)
 	end
 end
 
 -- Set the keybindings
 local function _set_mappings()
-	local mappings = {
-		["<cr>"] = "open_file()",
-		["<esc>"] = "close_window()",
-		o = "open_file()",
-		q = "close_window()",
-		v = "open_file_vs()",
-		s = "open_file_sp()",
-	}
-
-	-- Set default bindings
-	for _, v in ipairs(other_chars) do
+	-- Disable reserved keybindings
+	for _, v in ipairs(disabled_chars) do
 		vim.api.nvim_buf_set_keymap(buf, "n", v, "", { nowait = true, noremap = false, silent = true })
 		vim.api.nvim_buf_set_keymap(buf, "n", v:upper(), "", { nowait = true, noremap = false, silent = true })
 		vim.api.nvim_buf_set_keymap(buf, "n", "<c-" .. v .. ">", "", { nowait = true, noremap = false, silent = true })
 	end
 
-	-- remove other default bindings
-	for k, v in pairs(mappings) do
+	-- Add the defaultkeybindings from the config to open, close, splits, etc..
+	for k, v in pairs(keybindings) do
 		vim.api.nvim_buf_set_keymap(buf, "n", k, ':lua require"other-nvim.helper.window".' .. v .. "<cr>", {
 			nowait = true,
 			noremap = true,
 			silent = true,
 		})
+
+		-- make sure that the defined config keybindings are not part of the file shortcuts
+		local pos_shortcut_chars = util.indexOf(shortcut_chars, k)
+		if pos_shortcut_chars ~= nil then
+			table.remove(shortcut_chars, pos_shortcut_chars)
+		end
 	end
 
-	-- add shortcut bindings
+	-- add shortcut bindings to the files list
 	for i, v in ipairs(shortcut_chars) do
 		vim.api.nvim_buf_set_keymap(
 			buf,
@@ -136,6 +135,9 @@ local function _prepareLines(files)
 	local result = {}
 	for k, file in pairs(files) do
 		local filename = file.filename
+		local fileNotExistsMarker = (not file.exists and newFileIndicator .. " " or "")
+		filename = fileNotExistsMarker .. filename
+
 		local context = file.context or ""
 		local shortcut = shortcut_chars[k] or ""
 		if maxContextLength > 0 then
@@ -150,9 +152,9 @@ local function _prepareLines(files)
 			local fn = ""
 			-- cut filename from the right side minus the window width and result[k]
 			fn = string.sub(filename, -width + #result[k] + 4, #filename)
-			if (#fn < #filename) then
+			if #fn < #filename then
 				fn = ".." .. fn
-			end 
+			end
 			result[k] = result[k] .. fn .. "  "
 		else
 			result[k] = "  " .. shortcut_chars[k] .. " " .. colSeparator .. "../" .. filename
@@ -169,6 +171,17 @@ local function _update_view(lines)
 	for k, _ in pairs(lines) do
 		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k - 1, 2, 3)
 		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k - 1, 2, 3)
+		if not matches[k].exists then
+			vim.api.nvim_buf_add_highlight(
+				buf,
+				-1,
+				"Underlined",
+				k - 1,
+				maxContextLength + 10,
+				maxContextLength + 10 + #newFileIndicator
+			)
+			vim.api.nvim_buf_add_highlight(buf, -1, "Conceal", k - 1, maxContextLength + 10 + #newFileIndicator + 1, -1)
+		end
 	end
 
 	vim.api.nvim_buf_set_option(buf, "modifiable", false)
@@ -209,7 +222,7 @@ end
 -- Closing the window
 function M.close_window()
 	vim.api.nvim_win_close(win, true)
-	_caller.setOtherFileToBuffer(lastfile, _callerBuffer)
+	otherInstance.setOtherFileToBuffer(lastfile, currentBuffer)
 end
 
 -- Opening the file
@@ -229,12 +242,15 @@ end
 
 -- Main function to open the window
 function M.open_window(files, callerInstance, callerBuffer)
-	_caller = callerInstance
-	_callerBuffer = callerBuffer
+	otherInstance = callerInstance
+	currentBuffer = callerBuffer
 
-	styleOptions = _caller.getOptions()["style"]
+	local styleOptions = otherInstance.getOptions()["style"]
 	colSeparator = " " .. styleOptions["seperator"] .. " "
+	newFileIndicator = styleOptions["newFileIndicator"]
 	border = styleOptions["border"]
+
+	keybindings = otherInstance.getOptions()["keybindings"]
 
 	width = math.floor(styleOptions["width"] * vim.api.nvim_get_option("columns"))
 	height = styleOptions["minHeight"]

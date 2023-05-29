@@ -37,6 +37,7 @@ end
 describe("rails-mapping", function()
 	it("minitest", function()
 		require("other-nvim").setup({
+			showMissingFiles = false,
 			mappings = {
 				"rails",
 			},
@@ -191,10 +192,10 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-minitest/lib/user_helper.rb")
 		assert.is_true(checkForStringAtPos(1, "test/unit/lib/user_helper_test.rb"))
-
 	end)
 	it("rspec", function()
 		require("other-nvim").setup({
+			showMissingFiles = false,
 			mappings = {
 				"rails",
 			},
@@ -348,13 +349,13 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-rspec/lib/user_helper.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/lib/user_helper_spec.rb"))
-
 	end)
 end)
 
 describe("angular", function()
 	it("mappings", function()
 		require("other-nvim").setup({
+			showMissingFiles = false,
 			mappings = {
 				"angular",
 			},
@@ -397,6 +398,7 @@ end)
 describe("laravel", function()
 	it("mappings", function()
 		require("other-nvim").setup({
+			showMissingFiles = false,
 			mappings = {
 				"laravel",
 			},
@@ -414,6 +416,7 @@ end)
 describe("livewire", function()
 	it("mappings", function()
 		require("other-nvim").setup({
+			showMissingFiles = false,
 			mappings = {
 				"livewire",
 			},
@@ -422,6 +425,5 @@ describe("livewire", function()
 		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
 		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
 		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
-
 	end)
 end)
