@@ -4,8 +4,7 @@ Open alternative files for the current buffer.
 
 ## tl;dr
 
-With this plugin you can open other/related files for the currently active buffer.
-For instance when editing a controller you can easily open a view, a model or a testcase without the need to open a fuzzy finder or a tree.
+This plugin allows you to open associated files for the currently active buffer. For example, while editing a controller, you can conveniently open a view, model, or testcase without using a fuzzy finder or tree.
 
 The plugin is inspired by plugins like [a.vim](https://github.com/vim-scripts/a.vim), [vim-projectionist](https://github.com/tpope/vim-projectionist) or [AltN8](https://plugins.jetbrains.com/plugin/1475-altn8)
 
@@ -226,6 +225,7 @@ local defaults = {
 | `transformers`    | List of functions which are used to transform values when mapping the target file. |
 | `rememberBuffers` | When this option is set to false the reference between two buffers is never saved. |
 | `style`           | Options to change the appearance of the window.                                    |
+| `hooks`           | Lua functions to modify the behaviour of plugin events |
 
 ### Mappings
 
@@ -332,8 +332,6 @@ require("other-nvim").setup({
 		    pattern = "/src/(.*)/.*.js$",
 		    target = "/src/%1/\\(*.css\\|*.scss\\)",
 		},
-		--- [...]
-	}
 })
 ```
 
@@ -357,25 +355,17 @@ For instance when something like `some-folder` is part of the pattern it should 
 
 #### Builtin Mappings
 
-Right now there are builtin mappings for `angular`, `rails`, `golang`, `laravel` and `livewire`.
+Right now there are builtin mappings for 
+* `angular`
+* `rails`
+* `golang`
+* `laravel`
+* `livewire`
+
 The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.
 
 The implementation of the mappings is straightforward and can be viewed [here](https://github.com/rgroli/other.nvim/blob/main/lua/other-nvim/builtin/mappings/). I'd ❤️ to see contributions to extend this list.
 To use the builtin mappings they can be passed as string to the mappings in the setup.
-
-```lua
-require("other-nvim").setup({
-    -- [...]
-    mappings = {
-        "livewire",
-        "laravel",
-        "angular",
-        "rails"
-        "golang"
-    }
-    -- [...]
-})
-```
 
 💡 If there are multiple mappings matching the current path a file picker will be shown to select the desired file.
 

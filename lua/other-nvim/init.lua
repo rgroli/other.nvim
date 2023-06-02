@@ -137,7 +137,10 @@ local findOther = function(filename, context)
 			if showMissingFiles and not dirMatching then
 				table.insert(mappingMatches, result)
 			else
-				mappingMatches = vim.fn.glob(result, true, true)
+				-- escape special characters in path before globbing
+				result = result:gsub("%[", "\\[")
+				result = result:gsub("%]", "\\]")
+				mappingMatches = vim.fn.glob(result, true, true) or {}
 			end
 
 			for _, value in pairs(mappingMatches) do
