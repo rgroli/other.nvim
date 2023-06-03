@@ -136,6 +136,7 @@ local function _prepareLines(files)
 	for k, file in pairs(files) do
 		local filename = file.filename
 		local fileNotExistsMarker = (not file.exists and newFileIndicator .. " " or "")
+		filename = filename:gsub(vim.fn.getcwd() .. "/", "")
 		filename = fileNotExistsMarker .. filename
 
 		local context = file.context or ""
