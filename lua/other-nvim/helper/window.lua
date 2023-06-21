@@ -23,7 +23,6 @@ local shortcut_chars = {
 	"g",
 	"w",
 	"e",
-	"t",
 	"u",
 	"o",
 	"p",
