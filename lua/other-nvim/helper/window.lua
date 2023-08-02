@@ -29,7 +29,6 @@ local shortcut_chars = {
 	"n",
 	"m",
 	"r",
-	"t",
 	"z",
 	"b",
 	"v",
@@ -228,6 +227,11 @@ end
 -- Opening the file
 function M.open_file(pos)
 	_openFile(":e", pos)
+end
+
+-- Opening the file in a new tab
+function M.open_file_tabnew(pos)
+	_openFile(":tabnew", pos)
 end
 
 -- Opening the file in a regular split

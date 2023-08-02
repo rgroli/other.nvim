@@ -25,6 +25,7 @@ After setting up the plugin with builtin or custom mapping, it provides this set
 | Command        | Description                                                           |
 | -------------- | --------------------------------------------------------------------- |
 | `:Other`       | Opens the other/alternative file according to the configured mapping. |
+| `:OtherTabNew` | Like `:Other`but opens the file in a new tab.                         |
 | `:OtherSplit`  | Like `:Other`but opens the file in an horizontal split.               |
 | `:OtherVSplit` | Like `:Other`but opens the file in a vertical split.                  |
 
@@ -115,6 +116,7 @@ require("other-nvim").setup({
 })
 
 vim.api.nvim_set_keymap("n", "<leader>ll", "<cmd>:Other<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "<leader>ltn", "<cmd>:OtherTabNew<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>lp", "<cmd>:OtherSplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>lv", "<cmd>:OtherVSplit<CR>", { noremap = true, silent = true })
 vim.api.nvim_set_keymap("n", "<leader>lc", "<cmd>:OtherClear<CR>", { noremap = true, silent = true })
@@ -129,6 +131,7 @@ After the installation the following commands are offered:
 | Value        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | :Other       | Tries to open the other/alternative file based on the configured mappings. When there is a perfect match the corresponding file will be opened. If there are multiple candidates, a file picker will be opened. After picking a file, the two files hold an internal reference to each other. In that way you only have to pick the other/alternative file once. This behaviour can be turned off by setting the configuration-option `rememberBuffers` to `false`. |
+| :OtherTabNew  | Same as `:Other` but the file is opened in a new tab.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | :OtherSplit  | Same as `:Other` but the file is opened in a horizontal split.                                                                                                                                                                                                                                                                                                                                                                                                      |
 | :OtherVSplit | Same as `:OtherSplit` but the split is vertical.                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | :OtherClear  | Clears the internal reference to the other/alternative file. Afterwards a file picker will be opened again if there are multiple matches for the current file.                                                                                                                                                                                                                                                                                                      |
@@ -168,6 +171,7 @@ local defaults = {
 	keybindings = {
 		["<cr>"] = "open_file()",
 		["<esc>"] = "close_window()",
+		t = "open_file_tabnew()",
 		o = "open_file()",
 		q = "close_window()",
 		v = "open_file_vs()",

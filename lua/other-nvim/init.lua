@@ -40,6 +40,7 @@ local defaults = {
 		["<cr>"] = "open_file()",
 		["<esc>"] = "close_window()",
 		o = "open_file()",
+		t = "open_file_tabnew()",
 		q = "close_window()",
 		v = "open_file_vs()",
 		s = "open_file_sp()",
@@ -275,6 +276,11 @@ end
 -- Trying to open another file
 M.open = function(context)
 	open(context, "e")
+end
+
+-- Trying to open another file in new tab
+M.openTabNew = function(context)
+	open(context, "tabnew")
 end
 
 -- Trying to open another file in split

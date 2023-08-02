@@ -5,6 +5,7 @@ set cpo&vim           " reset them to defaults
 
 " commands 
 command! -nargs=* Other lua require('other-nvim').open(<f-args>)
+command! -nargs=* OtherTabNew lua require('other-nvim').openTabNew(<f-args>)
 command! -nargs=* OtherSplit lua require('other-nvim').openSplit(<f-args>)
 command! -nargs=* OtherVSplit lua require('other-nvim').openVSplit(<f-args>)
 command! -nargs=* OtherClear lua require('other-nvim').clear(<f-args>)
