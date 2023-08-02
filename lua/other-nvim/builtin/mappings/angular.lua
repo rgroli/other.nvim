@@ -67,4 +67,22 @@ return {
 			},
 		},
 	},
+	{
+		pattern = "/(.*)/(.*).service.ts$",
+		target = {
+			{
+				target = "/%1/%2.service.spec.ts",
+				context = "test",
+			},
+		},
+	},
+	{
+		pattern = "/(.*)/(.*).service.spec.ts$",
+		target = {
+			{
+				target = "/%1/%2.service.ts",
+				context = "service",
+			},
+		},
+	},
 }
