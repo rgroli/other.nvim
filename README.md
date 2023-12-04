@@ -45,12 +45,12 @@ The default keybindings can be overwritten using the keybindings table in the co
 
 ```
 	keybindings = {
-		["<cr>"] = "open_file()",
+		["<cr>"] = "open_file_by_command()", -- Open the file with last opening command based on how the filepicker was initially opened. (Other, OtherTab, OtherSplit, OtherVSplit) 
 		["<esc>"] = "close_window()",
 		o = "open_file()",
 		q = "close_window()",
-		v = "open_file_vs()",
-		s = "open_file_sp()",
+		v = "open_file_vs()", -- open file in a vertical split
+		s = "open_file_sp()", -- open file in a horizontal split
 	},
 ```
 
@@ -169,7 +169,7 @@ local defaults = {
 	rememberBuffers = true,
 
 	keybindings = {
-		["<cr>"] = "open_file()",
+		["<cr>"] = "open_file_by_command()",
 		["<esc>"] = "close_window()",
 		t = "open_file_tabnew()",
 		o = "open_file()",
@@ -185,7 +185,7 @@ local defaults = {
 		--
 		-- The input parameter "files" is a lua table with each entry containing:
 		-- @param table (filename (string), context (string), exists (boolean))
-		-- @return table
+		-- @return table | boolean When an empty table or false is returned the filepicker is not openend.
 		filePickerBeforeShow = function(files)
 			return files
 		end,

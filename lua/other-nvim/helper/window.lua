@@ -2,7 +2,7 @@ local M = {}
 
 local util = require("other-nvim.helper.util")
 
-local otherInstance, currentBuffer
+local otherInstance, currentBuffer, windowOpenCommand
 
 local lastfile = nil
 local buf, win
@@ -168,8 +168,8 @@ local function _update_view(lines)
 	vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
 
 	for k, _ in pairs(lines) do
-		vim.api.nvim_buf_add_highlight(buf, -1, "Error", k - 1, 2, 3)
-		vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", k - 1, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "OtherSelector", k - 1, 2, 3)
+		vim.api.nvim_buf_add_highlight(buf, -1, "OtherUnderlined", k - 1, 2, 3)
 		if not matches[k].exists then
 			vim.api.nvim_buf_add_highlight(
 				buf,
@@ -224,6 +224,10 @@ function M.close_window()
 	otherInstance.setOtherFileToBuffer(lastfile, currentBuffer)
 end
 
+-- Opening the file with last opening command based on how "other" was initially opened. (Other, OtherTab, OtherSplit, OtherVSplit)
+function M.open_file_by_command(pos)
+	_openFile(":" .. windowOpenCommand, pos)
+end
 -- Opening the file
 function M.open_file(pos)
 	_openFile(":e", pos)
@@ -245,9 +249,10 @@ function M.open_file_vs(pos)
 end
 
 -- Main function to open the window
-function M.open_window(files, callerInstance, callerBuffer)
+function M.open_window(files, callerInstance, callerBuffer, openCommand)
 	otherInstance = callerInstance
 	currentBuffer = callerBuffer
+	windowOpenCommand = openCommand
 
 	local styleOptions = otherInstance.getOptions()["style"]
 	colSeparator = " " .. styleOptions["seperator"] .. " "

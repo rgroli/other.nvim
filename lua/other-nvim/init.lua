@@ -37,7 +37,7 @@ local defaults = {
 	rememberBuffers = true,
 
 	keybindings = {
-		["<cr>"] = "open_file()",
+		["<cr>"] = "open_file_by_command()",
 		["<esc>"] = "close_window()",
 		o = "open_file()",
 		t = "open_file_tabnew()",
@@ -254,14 +254,24 @@ local open = function(context, openCommand)
 				util.openFile(openCommand, matches[1].filename, options.hooks.onOpenFile)
 			else
 				matches = options.hooks.filePickerBeforeShow(matches)
+
+				if not matches or #matches == 0 then
+					return
+				end
 				-- otherwise open a window to pick a file
-				window.open_window(matches, M, vim.api.nvim_get_current_buf())
+				window.open_window(matches, M, vim.api.nvim_get_current_buf(), openCommand)
 			end
 		else
 			print("No 'other' file found.")
 		end
 	end
 end
+
+-- custom colors
+M.colors = {
+	Selector = "Error",
+	Underlined = "Underlined",
+}
 
 -- -- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
 
@@ -271,6 +281,15 @@ M.setup = function(opts)
 	options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
 	vim.g.other_lastmatches = {}
 	vim.g.other_lastopened = nil
+
+	-- setting hl groups
+	for hl_group, link in pairs(M.colors) do
+		vim.api.nvim_set_hl(0, "Other" .. hl_group, {
+			link = link,
+			default = true,
+		})
+	end
+
 end
 
 -- Trying to open another file
