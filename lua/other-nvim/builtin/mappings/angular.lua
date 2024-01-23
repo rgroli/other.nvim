@@ -1,6 +1,6 @@
 return {
 	{
-		pattern = "/(.*)/(.*)/(.*).ts$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*.ts$",
 		target = {
 			{
 				target = "/%1/%2/%3.component.html",
@@ -17,7 +17,7 @@ return {
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/(.*).html$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*html$",
 		target = {
 			{
 				target = "/%1/%2/%3.component.ts",
@@ -34,7 +34,7 @@ return {
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/(.*).scss$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*scss$",
 		target = {
 			{
 				target = "/%1/%2/%3.component.html",
@@ -51,7 +51,7 @@ return {
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/(.*).spec.ts$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*spec.ts$",
 		target = {
 			{
 				target = "/%1/%2/%3.component.html",
