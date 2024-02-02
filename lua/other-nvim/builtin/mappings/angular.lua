@@ -1,68 +1,68 @@
 return {
 	{
-		pattern = "/(.*)/(.*)/.*.ts$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*.ts$",
 		target = {
 			{
-				target = "/%1/%2/%2.component.html",
+				target = "/%1/%2/%3.component.html",
 				context = "html",
 			},
 			{
-				target = "/%1/%2/%2.component.scss",
+				target = "/%1/%2/%3.component.scss",
 				context = "scss",
 			},
 			{
-				target = "/%1/%2/%2.component.spec.ts",
+				target = "/%1/%2/%3.component.spec.ts",
 				context = "test",
 			},
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/.*.html$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*html$",
 		target = {
 			{
-				target = "/%1/%2/%2.component.ts",
+				target = "/%1/%2/%3.component.ts",
 				context = "component",
 			},
 			{
-				target = "/%1/%2/%2.component.scss",
+				target = "/%1/%2/%3.component.scss",
 				context = "scss",
 			},
 			{
-				target = "/%1/%2/%2.component.spec.ts",
+				target = "/%1/%2/%3.component.spec.ts",
 				context = "test",
 			},
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/.*.scss$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*scss$",
 		target = {
 			{
-				target = "/%1/%2/%2.component.html",
+				target = "/%1/%2/%3.component.html",
 				context = "html",
 			},
 			{
-				target = "/%1/%2/%2.component.ts",
+				target = "/%1/%2/%3.component.ts",
 				context = "component",
 			},
 			{
-				target = "/%1/%2/%2.component.spec.ts",
+				target = "/%1/%2/%3.component.spec.ts",
 				context = "test",
 			},
 		},
 	},
 	{
-		pattern = "/(.*)/(.*)/.*.spec.ts$",
+		pattern = "/(.*)/(.*)/([a-zA-Z-_]*).*spec.ts$",
 		target = {
 			{
-				target = "/%1/%2/%2.component.html",
+				target = "/%1/%2/%3.component.html",
 				context = "html",
 			},
 			{
-				target = "/%1/%2/%2.component.scss",
+				target = "/%1/%2/%3.component.scss",
 				context = "scss",
 			},
 			{
-				target = "/%1/%2/%2.component.ts",
+				target = "/%1/%2/%3.component.ts",
 				context = "component",
 			},
 		},
