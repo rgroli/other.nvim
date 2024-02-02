@@ -200,7 +200,7 @@ local defaults = {
 			return true
 		end,
 
-        -- This hook is called whenever the plugin tries to find other files.
+        	-- This hook is called whenever the plugin tries to find other files.
 		-- It returns the matches found by the plugin. It can be used to filter or reorder the files or use the matches with another plugin.
 		--
 		-- @param matches (table) lua table with each entry containing: (filename (string), context (string), exists (boolean))
