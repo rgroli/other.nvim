@@ -67,6 +67,15 @@ local defaults = {
 		onOpenFile = function(filename, exists)
 			return true
 		end,
+
+		-- This hook is called whenever the plugin tries to find other files.
+		-- It returns the matches found by the plugin. It can be used to filter or reorder the files or use the matches with another plugin.
+		--
+		-- @param matches (table) lua table with each entry containing: (filename (string), context (string), exists (boolean))
+		-- @return (matches) Make sure to return the matches, otherwise the plugin will not work as expected.
+		onFindOtherFiles = function(matches)
+			return matches
+		end,
 	},
 
 	style = {
@@ -176,7 +185,9 @@ local findOther = function(filename, context)
 		end)
 	end
 
+	matches = options.hooks.onFindOtherFiles(matches)
 	saveLastMatches(matches)
+
 	return matches
 end
 
