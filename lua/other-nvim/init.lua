@@ -333,4 +333,9 @@ M.clear = function()
 	vim.b.onv_otherFile = nil
 end
 
+-- Made public to be used in other implementations 
+M.findOther = function(filename, context)
+	return findOther(filename, context)
+end
+
 return M
