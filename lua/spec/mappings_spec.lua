@@ -201,6 +201,7 @@ describe("rails-mapping", function()
 		runOther("/lua/spec/fixtures/rails-minitest/lib/user_helper.rb")
 		assert.is_true(checkForStringAtPos(1, "test/unit/lib/user_helper_test.rb"))
 	end)
+
 	it("rspec", function()
 		require("other-nvim").setup({
 			showMissingFiles = false,
@@ -281,6 +282,9 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/feature_spec.rb"))
 		assert.is_true(checkForStringAtPos(2, "app/controllers/api/v1/feature_controller.rb"))
 		assert.is_true(checkForStringAtPos(3, "app/controllers/api/v2/feature_controller.rb"))
+		assert.is_true(checkForStringAtPos(4, "app/channels/api/v1/feature_channel.rb"))
+		assert.is_true(checkForStringAtPos(5, "spec/factories/features.rb"))
+
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/user.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/user_spec.rb"))
@@ -292,6 +296,9 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(7, "app/serializers/user_serializer.rb"))
 		assert.is_true(checkForStringAtPos(8, "app/services/user_service.rb"))
 		assert.is_true(checkForStringAtPos(9, "app/workers/user/user_worker.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/app/models/spec.rb")
+		assert.is_true(checkForStringAtPos(1, "spec/factories/specs.rb"))
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/serializers/user_serializer.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/serializers/user_serializer_spec.rb"))

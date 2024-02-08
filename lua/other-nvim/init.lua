@@ -118,14 +118,17 @@ local findOther = function(filename, context)
 
 		if match ~= nil then
 			local fn = filename
-			-- if we have a match, optionally transform the match
-			if mapping.transformer ~= nil then
-				local transformedMatch = options.transformers[mapping.transformer](match)
-				fn, _ = filename:gsub(util.escape_pattern(match), transformedMatch)
-			end
-
-			-- return (transformed) match with "target"
-			local result, _ = fn:gsub(mapping.pattern, mapping.target)
+			local result, _ = fn:gsub(mapping.pattern, function(...)
+				local captureds = { ... }
+				local transformed_parts = {}
+				for _, part in ipairs(captureds) do
+					local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part) or part
+					table.insert(transformed_parts, transformed_part)
+				end
+				return mapping.target:gsub("%%(%d)", function(n)
+					return transformed_parts[tonumber(n)] or ''
+				end)
+			end)
 
 			local showMissingFiles = options.showMissingFiles
 			local dirMatching = false
