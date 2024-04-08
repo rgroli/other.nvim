@@ -81,6 +81,28 @@ return {
 			{ target = "%1/app/%4s/%3_%4.rb" },
 		},
 	},
+	{
+		pattern = "(.+)/spec/(.*)/(.*)/(.*)_spec.rb",
+		target = {
+			{ target = "%1/db/%3/%4.rb" },
+			{ target = "%1/app/%3/%4.rb" },
+			{ target = "%1/%3/%4.rb" },
+		},
+	},
+	{
+		pattern = "(.+)/spec/(.*)/(.*)_spec.rb",
+		target = {
+			{ target = "%1/db/%2/%3.rb" },
+			{ target = "%1/app/%2/%3.rb" },
+			{ target = "%1/lib/%2/%3.rb" },
+		},
+	},
+	{
+		pattern = "(.+)/spec/(.*)/(.*)_(.*)_spec.rb",
+		target = {
+			{ target = "%1/app/%4s/%3_%4.rb" },
+		},
+	},
 	-- Additional mappings per filetype
 	{
 		pattern = "/app/controllers/(.*)_controller.rb",
