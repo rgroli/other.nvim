@@ -45,7 +45,7 @@ The default keybindings can be overwritten using the keybindings table in the co
 
 ```
 	keybindings = {
-		["<cr>"] = "open_file_by_command()", -- Open the file with last opening command based on how the filepicker was initially opened. (Other, OtherTab, OtherSplit, OtherVSplit) 
+		["<cr>"] = "open_file_by_command()", -- Open the file with last opening command based on how the filepicker was initially opened. (Other, OtherTab, OtherSplit, OtherVSplit)
 		["<esc>"] = "close_window()",
 		o = "open_file()",
 		q = "close_window()",
@@ -369,8 +369,9 @@ For instance when something like `some-folder` is part of the pattern it should 
 
 #### Builtin Mappings
 
-Right now there are builtin mappings for 
+Right now there are builtin mappings for
 * `angular`
+* `c`
 * `rails`
 * `golang`
 * `laravel`
@@ -385,12 +386,12 @@ To use the builtin mappings they can be passed as string to the mappings in the 
 
 #### Non existing files
 
-When `showMissingFiles` is true, the plugin also displays files that have a matching mapping but do not exist yet.  
+When `showMissingFiles` is true, the plugin also displays files that have a matching mapping but do not exist yet.
 
 The configuration option `newFileIndicator` is the string which is displayed in front of the non-existing file.
-When the file is opened with the file picker it is created. 
+When the file is opened with the file picker it is created.
 
-To apply more custom logic like for instance using another plugin to prepopulate the contents of the created file based on a template, it is also possible to use the `onOpenFile` hook. 
+To apply more custom logic like for instance using another plugin to prepopulate the contents of the created file based on a template, it is also possible to use the `onOpenFile` hook.
 
 ### Transformers
 
