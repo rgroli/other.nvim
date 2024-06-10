@@ -153,6 +153,7 @@ local findOther = function(filename, context)
 				-- escape special characters in path before globbing
 				result = result:gsub("%[", "\\[")
 				result = result:gsub("%]", "\\]")
+				result = result:gsub("%%%+", "+")
 				mappingMatches = vim.fn.glob(result, true, true) or {}
 			end
 

@@ -44,3 +44,4 @@ luac.out
 Session.vim
 
 plugin/reload.vim
+.aider*
