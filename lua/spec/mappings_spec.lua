@@ -445,31 +445,31 @@ end)
 describe("rust", function()
 	it("mappings", function()
 		require("other-nvim").setup({
-			showMissingFiles = false,
+			showMissingFiles = true,
 			mappings = {
 				"rust",
 			},
 		})
 
 		-- tests
-		runOther("/lua/spec/fixtures/rust/src/mod.rs")
-		assert.is_true(checkForStringAtPos(1, "test_mod.rs"))
+		runOther("/lua/spec/fixtures/rust/src/subdir/mod.rs")
+		assert.is_true(checkForStringAtPos(1, "tests/subdir/test_mod.rs"))
 
 		runOther("/lua/spec/fixtures/rust/tests/test_mod.rs")
-		assert.is_true(checkForStringAtPos(1, "mod.rs"))
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
 
 		-- benchmarks
 		runOther("/lua/spec/fixtures/rust/src/mod.rs")
-		assert.is_true(checkForStringAtPos(2, "bench_mod.rs"))
+		assert.is_true(checkForStringAtPos(2, "/benches/bench_mod.rs"))
 
 		runOther("/lua/spec/fixtures/rust/benches/bench_mod.rs")
-		assert.is_true(checkForStringAtPos(1, "mod.rs"))
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
 
 		-- examples
 		runOther("/lua/spec/fixtures/rust/src/mod.rs")
-		assert.is_true(checkForStringAtPos(3, "ex_mod.rs"))
+		assert.is_true(checkForStringAtPos(3, "/examples/ex_mod.rs"))
 
 		runOther("/lua/spec/fixtures/rust/examples/ex_mod.rs")
-		assert.is_true(checkForStringAtPos(1, "mod.rs"))
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
 	end)
 end)
