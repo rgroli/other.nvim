@@ -285,7 +285,6 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(4, "app/channels/api/v1/feature_channel.rb"))
 		assert.is_true(checkForStringAtPos(5, "spec/factories/features.rb"))
 
-
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/user.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/user_spec.rb"))
 		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
@@ -440,5 +439,27 @@ describe("livewire", function()
 		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
 		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
 		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
+	end)
+end)
+
+describe("python", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = false,
+			mappings = {
+				"python",
+			},
+		})
+
+		runOther("/lua/spec/fixtures/python/module1.py")
+		assert.is_true(checkForStringAtPos(1, "test_module1.py"))
+		assert.is_true(checkForStringAtPos(2, "test_module1.py"))
+		assert.is_true(checkForStringAtPos(3, "test_module1.py"))
+
+		runOther("/lua/spec/fixtures/python/tests/test_module1.py")
+		assert.is_true(checkForStringAtPos(1, "module1.py"))
+
+		runOther("/lua/spec/fixtures/python/tests/unit/test_module1.py")
+		assert.is_true(checkForStringAtPos(1, "module1.py"))
 	end)
 end)
