@@ -285,7 +285,6 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(4, "app/channels/api/v1/feature_channel.rb"))
 		assert.is_true(checkForStringAtPos(5, "spec/factories/features.rb"))
 
-
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/user.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/user_spec.rb"))
 		assert.is_true(checkForStringAtPos(2, "app/controllers/user_controller.rb"))
@@ -440,5 +439,37 @@ describe("livewire", function()
 		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
 		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
 		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
+	end)
+end)
+
+describe("rust", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = false,
+			mappings = {
+				"rust",
+			},
+		})
+
+		-- tests
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(1, "test_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/tests/test_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "mod.rs"))
+
+		-- benchmarks
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(2, "bench_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/benches/bench_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "mod.rs"))
+
+		-- examples
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(3, "ex_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/examples/ex_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "mod.rs"))
 	end)
 end)
