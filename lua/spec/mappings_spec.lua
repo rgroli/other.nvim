@@ -442,6 +442,28 @@ describe("livewire", function()
 	end)
 end)
 
+describe("python", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = false,
+			mappings = {
+				"python",
+			},
+		})
+
+		runOther("/lua/spec/fixtures/python/module1.py")
+		assert.is_true(checkForStringAtPos(1, "test_module1.py"))
+		assert.is_true(checkForStringAtPos(2, "test_module1.py"))
+		assert.is_true(checkForStringAtPos(3, "test_module1.py"))
+
+		runOther("/lua/spec/fixtures/python/tests/test_module1.py")
+		assert.is_true(checkForStringAtPos(1, "module1.py"))
+
+		runOther("/lua/spec/fixtures/python/tests/unit/test_module1.py")
+		assert.is_true(checkForStringAtPos(1, "module1.py"))
+	end)
+end)
+
 describe("rust", function()
 	it("mappings", function()
 		require("other-nvim").setup({

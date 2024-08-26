@@ -7,6 +7,7 @@ local mappings = {
 	"laravel",
 	"livewire",
 	"rails",
+	"python",
 	"rust",
 }
 
