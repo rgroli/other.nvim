@@ -71,6 +71,7 @@ require("other-nvim").setup({
         "laravel",
         "rails",
         "golang",
+        "rust",
         -- custom mapping
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
@@ -112,6 +113,7 @@ require("other-nvim").setup({
 		"laravel",
 		"rails",
 		"golang",
+		"rust",
 	},
 })
 
@@ -376,6 +378,7 @@ Right now there are builtin mappings for
 * `golang`
 * `laravel`
 * `livewire`
+* `rust`
 
 The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.
 
