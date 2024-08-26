@@ -8,6 +8,7 @@ local mappings = {
 	"livewire",
 	"rails",
 	"python",
+	"rust",
 }
 
 -- Include the mapping and add it to the builtin mapping table

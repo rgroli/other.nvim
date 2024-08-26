@@ -463,3 +463,59 @@ describe("python", function()
 		assert.is_true(checkForStringAtPos(1, "module1.py"))
 	end)
 end)
+
+describe("rust", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = true,
+			mappings = {
+				"rust",
+			},
+		})
+
+		-- tests
+
+		-- top level
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(1, "tests/test_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/tests/test_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
+		-- nested
+		runOther("/lua/spec/fixtures/rust/src/subdir/mod.rs")
+		assert.is_true(checkForStringAtPos(1, "tests/subdir/test_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/tests/subdir/test_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/subdir/mod.rs"))
+
+		-- benchmarks
+
+		-- top level
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(2, "/benches/bench_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/benches/bench_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
+		-- nested
+		runOther("/lua/spec/fixtures/rust/src/subdir/mod.rs")
+		assert.is_true(checkForStringAtPos(3, "/benches/subdir/bench_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/benches/subdir/bench_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/subdir/mod.rs"))
+
+		-- examples
+
+		-- top level
+		runOther("/lua/spec/fixtures/rust/src/mod.rs")
+		assert.is_true(checkForStringAtPos(3, "/examples/ex_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/examples/ex_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/mod.rs"))
+		-- nested
+		runOther("/lua/spec/fixtures/rust/src/subdir/mod.rs")
+		assert.is_true(checkForStringAtPos(2, "/examples/subdir/ex_mod.rs"))
+
+		runOther("/lua/spec/fixtures/rust/examples/subdir/ex_mod.rs")
+		assert.is_true(checkForStringAtPos(1, "/src/subdir/mod.rs"))
+	end)
+end)
