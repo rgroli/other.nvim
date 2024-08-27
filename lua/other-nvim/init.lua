@@ -24,15 +24,11 @@ local defaults = {
 		kebapToCamel = transformers.kebapToCamel,
 		pluralize = transformers.pluralize,
 		singularize = transformers.singularize,
-		telescope = false, -- Use Telescope for file picking
 	},
 
 	-- Should the window show files which do not exist yet based on
 	-- pattern matching. Selecting the files will create the file.
 	showMissingFiles = true,
-
-	-- Enable this to use Telescope for file picking instead of using the internarl file picker
-	telecope = false,
 
 	-- When a mapping requires an initial selection of the other file, this setting controls,
 	-- wether the selection should be remembered for the current user session.
@@ -126,11 +122,12 @@ local findOther = function(filename, context)
 				local captureds = { ... }
 				local transformed_parts = {}
 				for _, part in ipairs(captureds) do
-					local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part) or part
+					local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part)
+						or part
 					table.insert(transformed_parts, transformed_part)
 				end
 				return mapping.target:gsub("%%(%d)", function(n)
-					return transformed_parts[tonumber(n)] or ''
+					return transformed_parts[tonumber(n)] or ""
 				end)
 			end)
 
@@ -252,50 +249,7 @@ local getOtherFileFromBuffer = function()
 	return vim.b.onv_otherFile
 end
 
--- Actual opening
-local open_with_telescope = function(matches)
-	local pickers = require("telescope.pickers")
-	local finders = require("telescope.finders")
-	local actions = require("telescope.actions")
-	local action_state = require("telescope.actions.state")
-	local conf = require("telescope.config").values
-
-	pickers.new({}, {
-		prompt_title = "Find Other File",
-		finder = finders.new_table {
-			results = matches,
-			entry_maker = function(entry)
-				return {
-					value = entry.filename,
-					display = entry.filename .. (entry.exists and "" or " (* new *)"),
-					ordinal = entry.filename,
-				}
-			end,
-		},
-		sorter = conf.generic_sorter({}),
-		attach_mappings = function(prompt_bufnr, map)
-			actions.select_default:replace(function()
-				actions.close(prompt_bufnr)
-				local selection = action_state.get_selected_entry()
-				if selection then
-					util.openFile("e", selection.value, options.hooks.onOpenFile)
-				end
-			end)
-			return true
-		end,
-	}):find()
-end
-
 local open = function(context, openCommand)
-	if options.telescope then
-		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
-		if #matches > 0 then
-			open_with_telescope(matches)
-		else
-			print("No 'other' file found.")
-		end
-		return
-	end
 	local fileFromBuffer = nil
 
 	-- only check for remembered value if no context is given.
@@ -320,11 +274,7 @@ local open = function(context, openCommand)
 					return
 				end
 				-- otherwise open a window to pick a file
-				if options.telescope then
-					open_with_telescope(matches)
-				else
-					window.open_window(matches, M, vim.api.nvim_get_current_buf(), openCommand)
-				end
+				window.open_window(matches, M, vim.api.nvim_get_current_buf(), openCommand)
 			end
 		else
 			print("No 'other' file found.")
@@ -354,7 +304,6 @@ M.setup = function(opts)
 			default = true,
 		})
 	end
-
 end
 
 -- Trying to open another file
@@ -387,7 +336,7 @@ M.clear = function()
 	vim.b.onv_otherFile = nil
 end
 
--- Made public to be used in other implementations 
+-- Made public to be used in other implementations
 M.findOther = function(filename, context)
 	return findOther(filename, context)
 end
