@@ -72,6 +72,7 @@ require("other-nvim").setup({
         "rails",
         "golang",
         "python",
+        "react",
         "rust",
         -- custom mapping
         {
@@ -115,6 +116,7 @@ require("other-nvim").setup({
 		"rails",
 		"golang",
 		"python",
+        "react",
 		"rust",
 	},
 })
@@ -381,6 +383,7 @@ Right now there are builtin mappings for
 * `laravel`
 * `livewire`
 * `python`
+* `react`
 * `rust`
 
 The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.

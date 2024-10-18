@@ -8,6 +8,7 @@ local mappings = {
 	"livewire",
 	"rails",
 	"python",
+	"react",
 	"rust",
 }
 
