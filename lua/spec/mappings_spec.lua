@@ -464,6 +464,40 @@ describe("python", function()
 	end)
 end)
 
+describe("react", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			mappings = {
+				"react",
+			},
+		})
+
+		runOther("lua/spec/fixtures/react/util.js")
+		assert.is_true(checkForStringAtPos(1, "util.test.js"))
+
+		runOther("lua/spec/fixtures/react/util.test.js")
+		assert.is_true(checkForStringAtPos(2, "util.js"))
+
+		runOther("lua/spec/fixtures/react/util.ts")
+		assert.is_true(checkForStringAtPos(1, "util.test.ts"))
+
+		runOther("lua/spec/fixtures/react/util.test.ts")
+		assert.is_true(checkForStringAtPos(2, "util.ts"))
+
+		runOther("lua/spec/fixtures/react/Component.jsx")
+		assert.is_true(checkForStringAtPos(1, "Component.test.jsx"))
+
+		runOther("lua/spec/fixtures/react/Component.test.jsx")
+		assert.is_true(checkForStringAtPos(2, "Component.jsx"))
+
+		runOther("lua/spec/fixtures/react/Component.tsx")
+		assert.is_true(checkForStringAtPos(1, "Component.test.tsx"))
+
+		runOther("lua/spec/fixtures/react/Component.test.tsx")
+		assert.is_true(checkForStringAtPos(2, "Component.tsx"))
+	end)
+end)
+
 describe("rust", function()
 	it("mappings", function()
 		require("other-nvim").setup({
