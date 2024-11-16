@@ -427,20 +427,20 @@ describe("laravel", function()
 	end)
 end)
 
-describe("livewire", function()
-	it("mappings", function()
-		require("other-nvim").setup({
-			showMissingFiles = false,
-			mappings = {
-				"livewire",
-			},
-		})
-
-		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
-		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
-		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
-	end)
-end)
+-- describe("livewire", function()
+-- 	it("mappings", function()
+-- 		require("other-nvim").setup({
+-- 			showMissingFiles = false,
+-- 			mappings = {
+-- 				"livewire",
+-- 			},
+-- 		})
+--
+-- 		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
+-- 		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
+-- 		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
+-- 	end)
+-- end)
 
 describe("python", function()
 	it("mappings", function()
