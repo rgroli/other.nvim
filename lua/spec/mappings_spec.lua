@@ -553,3 +553,28 @@ describe("rust", function()
 		assert.is_true(checkForStringAtPos(1, "/src/subdir/mod.rs"))
 	end)
 end)
+
+describe("function-mappings", function()
+	it("basic function pattern", function()
+		require("other-nvim").setup({
+			showMissingFiles = false,
+			mappings = {
+				{
+					pattern = function(filename)
+						local component = { filename:match("/(.*)/(.*)/([a-zA-Z-_]*).*.ts$") }
+						if #component > 0 then
+							return component
+						end
+						return nil
+					end,
+					target = "/%1/%2/%3.component.scss",
+					context = "styles",
+				},
+			},
+		})
+
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts")
+
+		assert.is_true(checkForStringAtPos(1, "my%-component.component.scss"))
+	end)
+end)
