@@ -373,6 +373,41 @@ These characters need escaping when they should be used literally: `( ) . % + - 
 
 For instance when something like `some-folder` is part of the pattern it should be written as `some%-folder`.
 
+💡 Mappings also support function-based patterns for more complex matching logic:
+
+```lua
+require("other-nvim").setup({
+    mappings = {
+        {
+            -- Function receives the current file path and should return
+            -- captures to use in the target pattern, or nil if no match
+            pattern = function(file)
+                local match = file:match("/src/components/(.*)/index.tsx$")
+                if match then
+                    return {match, "component"}  -- Returns captures as table
+                end
+                return nil  -- No match
+            end,
+            target = "/src/tests/%1/%2.test.tsx",
+            context = "test"
+        }
+    }
+})
+```
+
+Function-based patterns are useful when:
+- You need more complex logic to determine if a file matches
+- You want to extract multiple captures with custom processing
+- Regular expressions alone aren't sufficient
+- You need to check external conditions
+
+The function should:
+- Take a single parameter (the current file path)
+- Return a table of captures to use in the target pattern (like `%1`, `%2`, etc.)
+- Return nil if the pattern doesn't match
+
+The captures returned by the function can be used in the target pattern just like regex captures, and can also be transformed using transformers.
+
 #### Builtin Mappings
 
 Right now there are builtin mappings for
