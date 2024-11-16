@@ -98,88 +98,49 @@ local defaults = {
 	},
 }
 
--- Saving the last matches in a global variable.
-local saveLastMatches = function(matches)
-	vim.g.other_lastmatches = matches
+-- Helper functions for file matching and transformation
+local function applyTransformations(parts, mapping, options)
+	local transformed_parts = {}
+	for _, part in ipairs(parts) do
+		local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part) or part
+		table.insert(transformed_parts, transformed_part)
+	end
+	return transformed_parts
 end
 
--- Find the potential other file(s)
--- Returns a table of matches.
-local findOther = function(filename, context)
-	local matches = {}
+local function substituteTargetPattern(target, transformed_parts)
+	return target:gsub("%%(%d)", function(n)
+		return transformed_parts[tonumber(n)] or ""
+	end)
+end
 
-	-- iterate over all the mapping to check if the filename matches against *any* pattern)
-	for _, mapping in pairs(options.mappings or {}) do
-		local match
+local function processGlobPatterns(result)
+	-- escape special characters in path before globbing
+	result = result:gsub("%[", "\\[")
+	result = result:gsub("%]", "\\]")
+	result = result:gsub("%%%+", "+")
+	return vim.fn.glob(result, true, true) or {}
+end
 
-		if mapping.context == context or context == nil then
-			match = filename:match(mapping.pattern)
-		end
-
-		if match ~= nil then
-			local fn = filename
-			local result, _ = fn:gsub(mapping.pattern, function(...)
-				local captureds = { ... }
-				local transformed_parts = {}
-				for _, part in ipairs(captureds) do
-					local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part) or part
-					table.insert(transformed_parts, transformed_part)
-				end
-				return mapping.target:gsub("%%(%d)", function(n)
-					return transformed_parts[tonumber(n)] or ''
-				end)
-			end)
-
-			local showMissingFiles = options.showMissingFiles
-			local dirMatching = false
-			local mappingMatches = {}
-
-			-- if result includes wildcards it can't be a suggested missing file,
-			-- because it can't be created on opening
-			if result:match("*") then
-				showMissingFiles = false
-			end
-
-			-- get a list of candidates based on the transformed match.
-			-- additional glob-patterns in the target are respected
-			if vim.fn.isdirectory(result) ~= 0 then
-				result = result .. "*"
-				dirMatching = true
-			end
-
-			if showMissingFiles and not dirMatching then
-				table.insert(mappingMatches, result)
-			else
-				-- escape special characters in path before globbing
-				result = result:gsub("%[", "\\[")
-				result = result:gsub("%]", "\\]")
-				result = result:gsub("%%%+", "+")
-				mappingMatches = vim.fn.glob(result, true, true) or {}
-			end
-
-			for _, value in pairs(mappingMatches) do
-				-- check wether the file is already added to the result
-				local found = false
-				for _, checkValue in pairs(matches) do
-					vim.inspect(checkValue)
-					if checkValue.filename == value then
-						found = true
-					end
-				end
-
-				if found == false and fn ~= value then
-					table.insert(matches, {
-						context = mapping.context,
-						filename = value,
-						exists = (vim.fn.filereadable(value) == 1 and true or false),
-					})
-				end
-			end
+local function isMatchAlreadyAdded(matches, value)
+	for _, checkValue in pairs(matches) do
+		if checkValue.filename == value then
+			return true
 		end
 	end
+	return false
+end
 
-	if options.showMissingFiles == true then
-		-- non existing entries to the bottom
+local function createMatchEntry(context, filename, exists)
+	return {
+		context = context,
+		filename = filename,
+		exists = exists,
+	}
+end
+
+local function sortMatchesByExistence(matches)
+	if options.showMissingFiles then
 		table.sort(matches, function(a, b)
 			if a.exists == true and b.exists == false then
 				return true
@@ -188,14 +149,73 @@ local findOther = function(filename, context)
 			end
 		end)
 	end
+	return matches
+end
 
+-- Saving the last matches in a global variable.
+local function saveLastMatches(matches)
+	vim.g.other_lastmatches = matches
+end
+
+-- Find the potential other file(s)
+-- Returns a table of matches.
+local function findOther(filename, context)
+	local matches = {}
+
+	-- iterate over all the mapping to check if the filename matches against *any* pattern)
+	for _, mapping in pairs(options.mappings or {}) do
+		if mapping.context == context or context == nil then
+			local match = filename:match(mapping.pattern)
+
+			if match then
+				local fn = filename
+				local result, _ = fn:gsub(mapping.pattern, function(...)
+					local captured_parts = { ... }
+					local transformed_parts = applyTransformations(captured_parts, mapping, options)
+					return substituteTargetPattern(mapping.target, transformed_parts)
+				end)
+
+				local showMissingFiles = options.showMissingFiles
+				local dirMatching = false
+				local mappingMatches = {}
+
+				-- if result includes wildcards it can't be a suggested missing file,
+				-- because it can't be created on opening
+				if result:match("*") then
+					showMissingFiles = false
+				end
+
+				-- get a list of candidates based on the transformed match.
+				-- additional glob-patterns in the target are respected
+				if vim.fn.isdirectory(result) ~= 0 then
+					result = result .. "*"
+					dirMatching = true
+				end
+
+				if showMissingFiles and not dirMatching then
+					table.insert(mappingMatches, result)
+				else
+					mappingMatches = processGlobPatterns(result)
+				end
+
+				for _, value in pairs(mappingMatches) do
+					if not isMatchAlreadyAdded(matches, value) and fn ~= value then
+						local exists = (vim.fn.filereadable(value) == 1)
+						table.insert(matches, createMatchEntry(mapping.context, value, exists))
+					end
+				end
+			end
+		end
+	end
+
+	matches = sortMatchesByExistence(matches)
 	matches = options.hooks.onFindOtherFiles(matches)
 	saveLastMatches(matches)
 
 	return matches
 end
 
-local flattenMapping = function(mapping, result)
+local function flattenMapping(mapping, result)
 	-- multiple patterns for a mapping
 	if type(mapping.target) == "table" then
 		for _, t in pairs(mapping.target) do
@@ -218,7 +238,7 @@ local flattenMapping = function(mapping, result)
 end
 
 -- Resolve string based builtinMappings
-local resolveBuiltinMappings = function(mappings)
+local function resolveBuiltinMappings(mappings)
 	local result = {}
 	if mappings ~= nil then
 		for _, mapping in pairs(mappings) do
@@ -244,12 +264,12 @@ M.setOtherFileToBuffer = function(otherFile, bufferHandle)
 	end
 end
 
-local getOtherFileFromBuffer = function()
+local function getOtherFileFromBuffer()
 	return vim.b.onv_otherFile
 end
 
 -- Actual opening
-local open = function(context, openCommand)
+local function open(context, openCommand)
 	local fileFromBuffer = nil
 
 	-- only check for remembered value if no context is given.
@@ -288,7 +308,7 @@ M.colors = {
 	Underlined = "Underlined",
 }
 
--- -- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
+-- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
 
 -- Default setup method
 M.setup = function(opts)
@@ -304,7 +324,6 @@ M.setup = function(opts)
 			default = true,
 		})
 	end
-
 end
 
 -- Trying to open another file
@@ -337,7 +356,7 @@ M.clear = function()
 	vim.b.onv_otherFile = nil
 end
 
--- Made public to be used in other implementations 
+-- Made public to be used in other implementations
 M.findOther = function(filename, context)
 	return findOther(filename, context)
 end
