@@ -10,7 +10,7 @@ local State = {
 	otherInstance = nil,
 	currentBuffer = nil,
 	windowOpenCommand = nil,
-	options = nil, -- Store options directly to avoid repeated calls
+	options = nil,
 }
 
 local shortcut_chars = {
