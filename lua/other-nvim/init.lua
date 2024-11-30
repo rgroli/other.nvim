@@ -3,6 +3,8 @@ local util = require("other-nvim.helper.util")
 local builtinMappings = require("other-nvim.builtin.mappings")
 local transformers = require("other-nvim.builtin.transformers")
 
+local M = {}
+
 ---@class OtherNvimConfig
 ---@field options table Configuration options
 ---@field highlights table Highlight groups
@@ -323,7 +325,6 @@ local function open_other_file(context, command)
 end
 
 -- Public API
-local M = {}
 
 ---@param opts table|nil Configuration options
 function M.setup(opts)
