@@ -1,21 +1,27 @@
--- The module itself
-local M = {}
-
-local options = {}
-
--- Helper functions to pick files from an popup
 local window = require("other-nvim.helper.window")
-
--- Include utils
 local util = require("other-nvim.helper.util")
-
--- Include the builtin mappings and transformers
 local builtinMappings = require("other-nvim.builtin.mappings")
 local transformers = require("other-nvim.builtin.transformers")
 
--- default settings
-local defaults = {
-	-- by default there are no mappings enabled
+local M = {}
+
+---@class OtherNvimConfig
+---@field options table Configuration options
+---@field highlights table Highlight groups
+local Config = {
+	options = {},
+	highlights = {
+		Selector = "Error",
+		Underlined = "Underlined",
+	},
+}
+
+---@class FileMatch
+---@field context string Context of the match
+---@field filename string Full path to the file
+---@field exists boolean Whether the file exists
+
+local default_config = {
 	mappings = {},
 
 	-- default transformers
@@ -98,247 +104,273 @@ local defaults = {
 	},
 }
 
--- Saving the last matches in a global variable.
-local saveLastMatches = function(matches)
-	vim.g.other_lastmatches = matches
+---@param pattern string Pattern to escape for glob
+local function escape_glob(pattern)
+	return pattern:gsub("([%[%]])", "\\%1"):gsub("%%%+", "+")
 end
 
--- Find the potential other file(s)
--- Returns a table of matches.
-local findOther = function(filename, context)
-	local matches = {}
+---@param pattern string Pattern to glob
+---@return string[] Matching files
+local function get_matching_files(pattern)
+	return vim.fn.glob(escape_glob(pattern), true, true) or {}
+end
 
-	-- iterate over all the mapping to check if the filename matches against *any* pattern)
-	for _, mapping in pairs(options.mappings or {}) do
-		local match
+---@param value string Value to transform
+---@param transformer_name string|nil Name of transformer to use
+---@param options table Options containing transformers
+---@return string Transformed value
+local function transform_value(value, transformer_name, options)
+	if not transformer_name then
+		return value
+	end
+	local transformer = options.transformers[transformer_name]
+	return transformer and transformer(value) or value
+end
 
-		if mapping.context == context or context == nil then
-			match = filename:match(mapping.pattern)
-		end
+---@param captures table Captured values
+---@param mapping table Mapping configuration
+---@param options table Options
+---@return table Transformed captures
+local function apply_transforms(captures, mapping, options)
+	return vim.tbl_map(function(capture)
+		return transform_value(capture, mapping.transformer, options)
+	end, captures)
+end
 
-		if match ~= nil then
-			local fn = filename
-			local result, _ = fn:gsub(mapping.pattern, function(...)
-				local captureds = { ... }
-				local transformed_parts = {}
-				for _, part in ipairs(captureds) do
-					local transformed_part = mapping.transformer and options.transformers[mapping.transformer](part)
-						or part
-					table.insert(transformed_parts, transformed_part)
-				end
-				return mapping.target:gsub("%%(%d)", function(n)
-					return transformed_parts[tonumber(n)] or ""
-				end)
+---@param pattern string Pattern with placeholders
+---@param values table Values to substitute
+local function substitute_placeholders(pattern, values)
+	return pattern:gsub("%%(%d)", function(n)
+		return values[tonumber(n)] or ""
+	end)
+end
+
+---@param context string Context
+---@param filename string Filename
+---@return FileMatch File match object
+local function create_file_match(context, filename)
+	return {
+		context = context,
+		filename = filename,
+		exists = vim.fn.filereadable(filename) == 1,
+	}
+end
+
+---@param matches FileMatch[] Existing matches
+---@param filename string Filename to check
+---@return boolean Whether filename exists in matches
+local function is_duplicate(matches, filename)
+	return vim.tbl_contains(
+		vim.tbl_map(function(m)
+			return m.filename
+		end, matches),
+		filename
+	)
+end
+
+---@param matches FileMatch[] Matches to sort
+---@return FileMatch[] Sorted matches
+local function sort_by_existence(matches)
+	if not Config.options.showMissingFiles then
+		return matches
+	end
+
+	table.sort(matches, function(a, b)
+		return (a.exists and not b.exists)
+	end)
+	return matches
+end
+
+---@param pattern string|function Pattern to match
+---@param current_file string Current file path
+---@return table|nil Matched captures
+local function get_pattern_matches(pattern, current_file)
+	if type(pattern) == "function" then
+		return pattern(current_file)
+	elseif type(pattern) == "string" then
+		local match = { current_file:match(pattern) }
+		return #match > 0 and match or nil
+	end
+	return nil
+end
+
+-- Mapping functions
+---@param mapping table Single mapping configuration
+---@param current_file string Current file path
+---@param matches FileMatch[] Existing matches
+---@return FileMatch[] Updated matches
+local function process_single_mapping(mapping, current_file, matches)
+	if not mapping.pattern then
+		return matches
+	end
+
+	local captured = get_pattern_matches(mapping.pattern, current_file)
+	if not captured then
+		return matches
+	end
+
+	local target = type(mapping.pattern) == "string"
+			and current_file:gsub(mapping.pattern, function(...)
+				local transformed = apply_transforms({ ... }, mapping, Config.options)
+				return substitute_placeholders(mapping.target, transformed)
 			end)
+		or substitute_placeholders(mapping.target, apply_transforms(captured, mapping, Config.options))
 
-			local showMissingFiles = options.showMissingFiles
-			local dirMatching = false
-			local mappingMatches = {}
+	local is_dir = vim.fn.isdirectory(target) == 1
+	local candidates = is_dir and get_matching_files(target .. "*")
+		or (Config.options.showMissingFiles and not target:match("*") and { target } or get_matching_files(target))
 
-			-- if result includes wildcards it can't be a suggested missing file,
-			-- because it can't be created on opening
-			if result:match("*") then
-				showMissingFiles = false
-			end
-
-			-- get a list of candidates based on the transformed match.
-			-- additional glob-patterns in the target are respected
-			if vim.fn.isdirectory(result) ~= 0 then
-				result = result .. "*"
-				dirMatching = true
-			end
-
-			if showMissingFiles and not dirMatching then
-				table.insert(mappingMatches, result)
-			else
-				-- escape special characters in path before globbing
-				result = result:gsub("%[", "\\[")
-				result = result:gsub("%]", "\\]")
-				result = result:gsub("%%%+", "+")
-				mappingMatches = vim.fn.glob(result, true, true) or {}
-			end
-
-			for _, value in pairs(mappingMatches) do
-				-- check wether the file is already added to the result
-				local found = false
-				for _, checkValue in pairs(matches) do
-					vim.inspect(checkValue)
-					if checkValue.filename == value then
-						found = true
-					end
-				end
-
-				if found == false and fn ~= value then
-					table.insert(matches, {
-						context = mapping.context,
-						filename = value,
-						exists = (vim.fn.filereadable(value) == 1 and true or false),
-					})
-				end
-			end
+	for _, candidate in ipairs(candidates) do
+		if not is_duplicate(matches, candidate) and current_file ~= candidate then
+			table.insert(matches, create_file_match(mapping.context, candidate))
 		end
 	end
-
-	if options.showMissingFiles == true then
-		-- non existing entries to the bottom
-		table.sort(matches, function(a, b)
-			if a.exists == true and b.exists == false then
-				return true
-			else
-				return false
-			end
-		end)
-	end
-
-	matches = options.hooks.onFindOtherFiles(matches)
-	saveLastMatches(matches)
 
 	return matches
 end
 
-local flattenMapping = function(mapping, result)
-	-- multiple patterns for a mapping
-	if type(mapping.target) == "table" then
-		for _, t in pairs(mapping.target) do
-			local m = vim.deepcopy(mapping)
-
-			if type(t) == "string" then
-				m.target = t
-			end
-			if type(t) == "table" then
-				for key, tv in pairs(t) do
-					m[key] = tv
-				end
-			end
-			table.insert(result, m)
-		end
-	else
-		table.insert(result, mapping)
+---@param mapping table Mapping to expand
+---@return table[] Expanded mappings
+local function expand_mapping(mapping)
+	if type(mapping.target) ~= "table" then
+		return { mapping }
 	end
-	return result
+
+	return vim.tbl_map(function(target)
+		local new_mapping = vim.deepcopy(mapping)
+		if type(target) == "string" then
+			new_mapping.target = target
+		else
+			for k, v in pairs(target) do
+				new_mapping[k] = v
+			end
+		end
+		return new_mapping
+	end, mapping.target)
 end
 
--- Resolve string based builtinMappings
-local resolveBuiltinMappings = function(mappings)
+---@param mappings table[] Mappings to resolve
+---@return table[] Resolved mappings
+local function resolve_mappings(mappings)
 	local result = {}
-	if mappings ~= nil then
-		for _, mapping in pairs(mappings) do
-			if type(mapping) == "string" then
-				if builtinMappings[mapping] ~= nil then
-					for _, biM in pairs(builtinMappings[mapping]) do
-						result = flattenMapping(biM, result)
-					end
-				end
-			else
-				result = flattenMapping(mapping, result)
-			end
-		end
-	end
-	return result
-end
-
-M.setOtherFileToBuffer = function(otherFile, bufferHandle)
-	if options.rememberBuffers == true then
-		if otherFile then
-			vim.api.nvim_buf_set_var(bufferHandle, "onv_otherFile", otherFile)
-		end
-	end
-end
-
-local getOtherFileFromBuffer = function()
-	return vim.b.onv_otherFile
-end
-
-local open = function(context, openCommand)
-	local fileFromBuffer = nil
-
-	-- only check for remembered value if no context is given.
-	if context == nil then
-		fileFromBuffer = getOtherFileFromBuffer()
-	end
-	-- when we had a match before, open that
-	if fileFromBuffer then
-		util.openFile(openCommand, fileFromBuffer, options.hooks.onOpenFile)
-	else
-		local matches = findOther(vim.api.nvim_buf_get_name(0), context or nil)
-		local matchesCount = #matches
-		if matchesCount > 0 then
-			-- when dealing with a single file -> just open it
-			if matchesCount == 1 then
-				M.setOtherFileToBuffer(matches[1].filename, vim.api.nvim_get_current_buf())
-				util.openFile(openCommand, matches[1].filename, options.hooks.onOpenFile)
-			else
-				matches = options.hooks.filePickerBeforeShow(matches)
-
-				if not matches or #matches == 0 then
-					return
-				end
-				-- otherwise open a window to pick a file
-				window.open_window(matches, M, vim.api.nvim_get_current_buf(), openCommand)
+	for _, mapping in ipairs(mappings or {}) do
+		if type(mapping) == "string" and builtinMappings[mapping] then
+			for _, builtin in ipairs(builtinMappings[mapping]) do
+				vim.list_extend(result, expand_mapping(builtin))
 			end
 		else
-			print("No 'other' file found.")
+			vim.list_extend(result, expand_mapping(mapping))
 		end
+	end
+	return result
+end
+
+-- Core functionality
+---@param filename string File to find others for
+---@param context string|nil Context to filter by
+---@return FileMatch[] Matching files
+local function find_other_files(filename, context)
+	local matches = {}
+
+	for _, mapping in ipairs(Config.options.mappings or {}) do
+		if mapping.context == context or context == nil then
+			matches = process_single_mapping(mapping, filename, matches)
+		end
+	end
+
+	local sorted = sort_by_existence(matches)
+	local processed = Config.options.hooks.onFindOtherFiles(sorted)
+	vim.g.other_lastmatches = processed
+	return processed
+end
+
+---@param other_file string File to reference
+---@param buffer number Buffer to set reference in
+local function manage_buffer_reference(other_file, buffer)
+	if Config.options.rememberBuffers and other_file then
+		vim.api.nvim_buf_set_var(buffer, "onv_otherFile", other_file)
 	end
 end
 
--- custom colors
-M.colors = {
-	Selector = "Error",
-	Underlined = "Underlined",
-}
+---@param context string|nil Context to filter by
+---@param command string Command to open file with
+local function open_other_file(context, command)
+	local current_buffer = vim.api.nvim_get_current_buf()
+	local remembered = context == nil and vim.b.onv_otherFile
 
--- -- -- -- -- -- -- -- -- -- PUBLIC -- -- -- -- -- -- -- -- --
+	if remembered then
+		util.openFile(command, remembered, Config.options.hooks.onOpenFile)
+		return
+	end
 
--- Default setup method
-M.setup = function(opts)
-	opts.mappings = resolveBuiltinMappings(opts.mappings)
-	options = vim.tbl_deep_extend("force", {}, defaults, opts or {})
+	local matches = find_other_files(vim.api.nvim_buf_get_name(0), context)
+
+	if #matches == 0 then
+		vim.notify("No 'other' file found.", vim.log.levels.WARN)
+		return
+	end
+
+	if #matches == 1 then
+		manage_buffer_reference(matches[1].filename, current_buffer)
+		util.openFile(command, matches[1].filename, Config.options.hooks.onOpenFile)
+		return
+	end
+
+	local filtered = Config.options.hooks.filePickerBeforeShow(matches)
+	if not filtered or #filtered == 0 then
+		return
+	end
+
+	window.open_window(filtered, M, current_buffer, command)
+end
+
+-- Public API
+
+---@param opts table|nil Configuration options
+function M.setup(opts)
+	opts = opts or {}
+	opts.mappings = resolve_mappings(opts.mappings)
+	Config.options = vim.tbl_deep_extend("force", {}, default_config, opts)
+
+	-- Initialize global state
 	vim.g.other_lastmatches = {}
 	vim.g.other_lastopened = nil
 
-	-- setting hl groups
-	for hl_group, link in pairs(M.colors) do
-		vim.api.nvim_set_hl(0, "Other" .. hl_group, {
+	-- Set up highlights
+	for group, link in pairs(Config.highlights) do
+		vim.api.nvim_set_hl(0, "Other" .. group, {
 			link = link,
 			default = true,
 		})
 	end
 end
 
--- Trying to open another file
-M.open = function(context)
-	open(context, "e")
+-- File opening commands
+function M.open(context)
+	open_other_file(context, "e")
 end
-
--- Trying to open another file in new tab
-M.openTabNew = function(context)
-	open(context, "tabnew")
+function M.openTabNew(context)
+	open_other_file(context, "tabnew")
 end
-
--- Trying to open another file in split
-M.openSplit = function(context)
-	open(context, "sp")
+function M.openSplit(context)
+	open_other_file(context, "sp")
 end
-
--- Trying to open another file in vertical split
-M.openVSplit = function(context)
-	open(context, "vs")
+function M.openVSplit(context)
+	open_other_file(context, "vs")
 end
-
--- return the currently set options
-M.getOptions = function()
-	return options
-end
-
--- Removing the memorized "other" file from the current buffer
-M.clear = function()
+function M.clear()
 	vim.b.onv_otherFile = nil
 end
 
--- Made public to be used in other implementations
-M.findOther = function(filename, context)
-	return findOther(filename, context)
+-- Utility functions
+function M.getOptions()
+	return Config.options
+end
+function M.findOther(...)
+	return find_other_files(...)
+end
+function M.setOtherFileToBuffer(...)
+	return manage_buffer_reference(...)
 end
 
 return M
