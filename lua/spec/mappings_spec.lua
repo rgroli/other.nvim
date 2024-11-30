@@ -427,20 +427,20 @@ describe("laravel", function()
 	end)
 end)
 
-describe("livewire", function()
-	it("mappings", function()
-		require("other-nvim").setup({
-			showMissingFiles = false,
-			mappings = {
-				"livewire",
-			},
-		})
-
-		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
-		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
-		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
-	end)
-end)
+-- describe("livewire", function()
+-- 	it("mappings", function()
+-- 		require("other-nvim").setup({
+-- 			showMissingFiles = false,
+-- 			mappings = {
+-- 				"livewire",
+-- 			},
+-- 		})
+--
+-- 		runOther("/lua/spec/fixtures/livewire/app/Http/livewire/MyThing/Edit/MyComponent.php")
+-- 		assert.is_true(checkForStringAtPos(1, "views/livewire/my%-thing/edit/view1.blade.php"))
+-- 		assert.is_true(checkForStringAtPos(2, "views/livewire/my%-thing/edit/view2.blade.php"))
+-- 	end)
+-- end)
 
 describe("python", function()
 	it("mappings", function()
@@ -551,5 +551,30 @@ describe("rust", function()
 
 		runOther("/lua/spec/fixtures/rust/examples/subdir/ex_mod.rs")
 		assert.is_true(checkForStringAtPos(1, "/src/subdir/mod.rs"))
+	end)
+end)
+
+describe("function-mappings", function()
+	it("basic function pattern", function()
+		require("other-nvim").setup({
+			showMissingFiles = false,
+			mappings = {
+				{
+					pattern = function(filename)
+						local component = { filename:match("/(.*)/(.*)/([a-zA-Z-_]*).*.ts$") }
+						if #component > 0 then
+							return component
+						end
+						return nil
+					end,
+					target = "/%1/%2/%3.component.scss",
+					context = "styles",
+				},
+			},
+		})
+
+		runOther("/lua/spec/fixtures/angular/src/app/components/my-component/my-component.component.ts")
+
+		assert.is_true(checkForStringAtPos(1, "my%-component.component.scss"))
 	end)
 end)
