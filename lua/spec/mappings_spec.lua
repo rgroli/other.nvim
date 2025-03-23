@@ -554,6 +554,32 @@ describe("rust", function()
 	end)
 end)
 
+describe("elixir", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = true,
+			mappings = {
+				"elixir",
+			},
+		})
+
+		-- tests
+
+		-- top level
+		runOther("/lua/spec/fixtures/elixir/lib/mod.ex")
+		assert.is_true(checkForStringAtPos(1, "test/test_mod.exs"))
+
+		runOther("/lua/spec/fixtures/elixir/test/test_mod.exs")
+		assert.is_true(checkForStringAtPos(1, "/lib/mod.ex"))
+		-- nested
+		runOther("/lua/spec/fixtures/elixir/lib/subdir/mod.ex")
+		assert.is_true(checkForStringAtPos(1, "test/subdir/test_mod.exs"))
+
+		runOther("/lua/spec/fixtures/elixir/test/subdir/test_mod.exs")
+		assert.is_true(checkForStringAtPos(1, "/lib/subdir/mod.ex"))
+	end)
+end)
+
 describe("function-mappings", function()
 	it("basic function pattern", function()
 		require("other-nvim").setup({
