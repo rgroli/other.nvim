@@ -74,6 +74,7 @@ require("other-nvim").setup({
         "python",
         "react",
         "rust",
+        "elixir",
         -- custom mapping
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
@@ -118,6 +119,7 @@ require("other-nvim").setup({
 		"python",
         "react",
 		"rust",
+        "elixir",
 	},
 })
 
@@ -420,6 +422,7 @@ Right now there are builtin mappings for
 * `python`
 * `react`
 * `rust`
+* `elixir`
 
 The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.
 
@@ -472,4 +475,3 @@ require("other-nvim").setup({
     -- [...]
 })
 ```
-
