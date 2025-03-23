@@ -571,6 +571,7 @@ describe("elixir", function()
 
 		runOther("/lua/spec/fixtures/elixir/test/test_mod.exs")
 		assert.is_true(checkForStringAtPos(1, "/lib/mod.ex"))
+
 		-- nested
 		runOther("/lua/spec/fixtures/elixir/lib/subdir/mod.ex")
 		assert.is_true(checkForStringAtPos(1, "test/subdir/test_mod.exs"))
