@@ -10,6 +10,7 @@ local mappings = {
 	"python",
 	"react",
 	"rust",
+	"elixir",
 }
 
 -- Include the mapping and add it to the builtin mapping table
