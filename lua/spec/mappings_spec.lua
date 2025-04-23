@@ -581,6 +581,23 @@ describe("elixir", function()
 	end)
 end)
 
+describe("clojure", function()
+	it("mappings", function()
+		require("other-nvim").setup({
+			showMissingFiles = true,
+			mappings = {
+				"clojure",
+			},
+		})
+		-- tests
+		runOther("/lua/spec/fixtures/clojure/src/domain/service.clj")
+		assert.is_true(checkForStringAtPos(1, "test/domain/service.clj"))
+
+		runOther("/lua/spec/fixtures/clojure/test/domain/service_test.clj")
+		assert.is_true(checkForStringAtPos(1, "src/domain/service.clj"))
+	end)
+end)
+
 describe("function-mappings", function()
 	it("basic function pattern", function()
 		require("other-nvim").setup({
