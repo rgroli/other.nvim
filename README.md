@@ -75,6 +75,7 @@ require("other-nvim").setup({
         "react",
         "rust",
         "elixir",
+        "clojure",
         -- custom mapping
         {
             pattern = "/path/to/file/src/app/(.*)/.*.ext$",
@@ -120,6 +121,7 @@ require("other-nvim").setup({
         "react",
 		"rust",
         "elixir",
+		"clojure",
 	},
 })
 
@@ -423,6 +425,7 @@ Right now there are builtin mappings for
 * `react`
 * `rust`
 * `elixir`
+* `clojure`
 
 The rails mappings now include functionality for the the testframeworks `minitest` and `rspec`.
 

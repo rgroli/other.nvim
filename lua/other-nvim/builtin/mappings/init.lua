@@ -11,6 +11,7 @@ local mappings = {
 	"react",
 	"rust",
 	"elixir",
+	"clojure",
 }
 
 -- Include the mapping and add it to the builtin mapping table
