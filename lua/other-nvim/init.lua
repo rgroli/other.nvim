@@ -32,6 +32,9 @@ local default_config = {
     singularize = transformers.singularize,
   },
 
+  -- Options: 'builtin', 'snacks'
+  picker = "builtin",
+
   -- Should the window show files which do not exist yet based on
   -- pattern matching. Selecting the files will create the file.
   showMissingFiles = true,
@@ -310,30 +313,130 @@ local function open_other_file(context, command)
 
   local matches = find_other_files(vim.api.nvim_buf_get_name(0), context)
 
+  -- Handle no matches (includes the onNoMatches hook from the previous step)
   if #matches == 0 then
-    -- Check if the hook exists and is callable
     if Config.options.hooks and type(Config.options.hooks.onNoMatches) == "function" then
       Config.options.hooks.onNoMatches() -- Call the user's hook
     else
-      -- Default behavior if no hook is provided or it's not a function
       vim.notify("No 'other' file found.", vim.log.levels.WARN)
     end
     return -- Stop further processing in either case
   end
 
+  -- Handle single match
   if #matches == 1 then
     manage_buffer_reference(matches[1].filename, current_buffer)
     util.openFile(command, matches[1].filename, Config.options.hooks.onOpenFile)
     return
   end
 
+  -- Handle multiple matches
   local filtered = Config.options.hooks.filePickerBeforeShow(matches)
   if not filtered or #filtered == 0 then
+    -- If the hook filtered everything out, behave as if no matches were found initially.
+    if Config.options.hooks and type(Config.options.hooks.onNoMatches) == "function" then
+      Config.options.hooks.onNoMatches()
+    else
+      vim.notify("No 'other' file found after filtering.", vim.log.levels.WARN)
+    end
     return
   end
 
-  window.open_window(filtered, M, current_buffer, command)
-end
+  -- *** START: New Picker Logic ***
+  if Config.options.picker == "snacks" then
+    local ok, snacks = pcall(require, "snacks")
+    if not ok then
+      vim.notify(
+        "snacks.nvim is required for the 'snacks' picker backend but couldn't be loaded.",
+        vim.log.levels.ERROR
+      )
+      vim.notify("Falling back to built-in picker.", vim.log.levels.WARN)
+      -- Fallback to default picker
+      window.open_window(filtered, M, current_buffer, command)
+      return
+    end
+
+    -- Prepare items for snacks.nvim
+    local snacks_items = {}
+    local newFileIndicator = Config.options.style.newFileIndicator or "(* new *)"
+    local cwd_pat_escaped = util.escape_pattern(vim.fn.getcwd()) .. "/"
+
+    for _, match in ipairs(filtered) do
+      -- Create a display path relative to cwd for cleaner visuals
+      local display_path = match.filename:gsub(cwd_pat_escaped, "")
+      local item_text -- Main text used by snacks for filtering if no custom format
+      if match.context then
+        item_text = match.context .. ": " .. display_path
+      else
+        item_text = display_path
+      end
+
+      table.insert(snacks_items, {
+        -- Standard fields snacks might use
+        text = item_text,
+        file = match.filename, -- Crucial: keep the full path here for opening
+
+        -- Custom fields for our formatter
+        o_filename = match.filename, -- Store original filename if needed elsewhere
+        o_display_path = display_path,
+        o_exists = match.exists,
+        o_context = match.context,
+      })
+    end
+
+    -- Configure snacks.nvim picker
+    local snacks_opts = {
+      items = snacks_items,
+      title = "Select Other File",
+
+      -- Custom formatter to mimic other-nvim's look
+      format = function(item)
+        local highlights = {} -- snacks.picker.Highlight[]
+        local new_indicator = Config.options.style.newFileIndicator or "(* new *)"
+        local separator = " " .. (Config.options.style.seperator or "|") .. " "
+
+        -- Add (* new *) indicator if the file doesn't exist
+        if not item.o_exists then
+          table.insert(highlights, { new_indicator .. " ", "Comment" }) -- Use a subtle highlight like Comment
+        end
+
+        -- Add context if it exists
+        if item.o_context then
+          table.insert(highlights, { item.o_context, "Type" }) -- Use highlight group 'Type' for context
+          table.insert(highlights, { separator, "Delimiter" }) -- Use 'Delimiter' for the separator
+        end
+
+        -- Add the display path
+        table.insert(highlights, { item.o_display_path, "String" }) -- Use 'String' for the path
+
+        return highlights
+      end,
+
+      -- Confirm action handles opening the file using other-nvim's logic
+      confirm = function(picker, item) -- Matches snacks action signature
+        if item and item.file then
+          manage_buffer_reference(item.file, current_buffer) -- Remember buffer if configured
+          util.openFile(command, item.file, Config.options.hooks.onOpenFile)
+          -- No need to explicitly close snacks picker here,
+          -- the default confirm action in snacks usually handles closing.
+          -- else
+          -- Optionally handle case where item is nil (e.g., picker closed without selection)
+        end
+        -- picker:close() -- Uncomment if snacks doesn't close automatically
+      end,
+      -- Optional: Customize layout, sorting, etc.
+      -- layout = { preset = "vertical" },
+      -- sort = { fields = { "o_context", "o_display_path" } } -- Sort by context then path
+    }
+
+    -- Launch snacks picker
+    snacks.picker(snacks_opts)
+  else
+    -- Original call to other-nvim's built-in window
+    window.open_window(filtered, M, current_buffer, command)
+  end
+  -- *** END: New Picker Logic ***
+end -- End of open_other_file function
 
 -- Public API
 
