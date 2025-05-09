@@ -277,6 +277,8 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/submodule/subfeature.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/submodule/subfeature_spec.rb"))
+		assert.is_true(checkForStringAtPos(2, "spec/factories/submodule/subfeatures.rb"))
+		assert.is_true(checkForStringAtPos(3, "spec/factories/submodule/subfeature.rb"))
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/feature.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/feature_spec.rb"))
@@ -284,6 +286,7 @@ describe("rails-mapping", function()
 		assert.is_true(checkForStringAtPos(3, "app/controllers/api/v2/feature_controller.rb"))
 		assert.is_true(checkForStringAtPos(4, "app/channels/api/v1/feature_channel.rb"))
 		assert.is_true(checkForStringAtPos(5, "spec/factories/features.rb"))
+		assert.is_true(checkForStringAtPos(6, "spec/factories/feature.rb"))
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/user.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/models/user_spec.rb"))
@@ -298,6 +301,7 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/models/spec.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/factories/specs.rb"))
+		assert.is_true(checkForStringAtPos(2, "spec/factories/spec.rb"))
 
 		runOther("/lua/spec/fixtures/rails-rspec/app/serializers/user_serializer.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/serializers/user_serializer_spec.rb"))
@@ -363,6 +367,18 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-rspec/lib/user_helper.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/lib/user_helper_spec.rb"))
+		
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/features.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/feature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/feature.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/feature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/submodule/subfeatures.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/submodule/subfeature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/submodule/subfeature.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/submodule/subfeature.rb"))
 	end)
 end)
 

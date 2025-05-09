@@ -11,6 +11,7 @@ local rails_alternative_targets = {
 	{ context = "service",    target = "/app/services/%1_service.rb" },
 	{ context = "worker",     target = "/app/workers/**/%1_worker.rb" },
 	{ context = "factories",  target = "/spec/factories/%1.rb",               transformer = "pluralize" },
+	{ context = "factories",  target = "/spec/factories/%1.rb" },
 }
 
 return {
@@ -101,6 +102,13 @@ return {
 		pattern = "(.+)/spec/(.*)/(.*)_(.*)_spec.rb",
 		target = {
 			{ target = "%1/app/%4s/%3_%4.rb" },
+		},
+	},
+	-- Going back to models from factories
+	{
+		pattern = "(.+)/spec/factories/(.*).rb",
+		target = {
+			{ target = "%1/app/models/%2.rb", transformer = "singularize" },
 		},
 	},
 	-- Additional mappings per filetype
