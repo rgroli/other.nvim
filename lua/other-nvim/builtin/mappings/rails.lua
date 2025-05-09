@@ -11,6 +11,7 @@ local rails_alternative_targets = {
 	{ context = "service",    target = "/app/services/%1_service.rb" },
 	{ context = "worker",     target = "/app/workers/**/%1_worker.rb" },
 	{ context = "factories",  target = "/spec/factories/%1.rb",               transformer = "pluralize" },
+	{ context = "factories",  target = "/spec/factories/%1.rb" },
 }
 
 return {
