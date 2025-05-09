@@ -367,6 +367,18 @@ describe("rails-mapping", function()
 
 		runOther("/lua/spec/fixtures/rails-rspec/lib/user_helper.rb")
 		assert.is_true(checkForStringAtPos(1, "spec/unit/lib/user_helper_spec.rb"))
+		
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/features.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/feature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/feature.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/feature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/submodule/subfeatures.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/submodule/subfeature.rb"))
+
+		runOther("/lua/spec/fixtures/rails-rspec/spec/factories/submodule/subfeature.rb")
+		assert.is_true(checkForStringAtPos(1, "app/models/submodule/subfeature.rb"))
 	end)
 end)
 
